@@ -1,0 +1,1445 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>과제 포트폴리오 대시보드</title>
+  <style>
+    :root {
+      --bg: #eceff8;
+      --paper: rgba(248, 250, 255, 0.9);
+      --paper-strong: #ffffff;
+      --ink: #1f2537;
+      --muted: #6a738e;
+      --line: rgba(103, 115, 160, 0.2);
+      --accent: #5a3ff0;
+      --accent-soft: #9f8fff;
+      --teal: #4d67ff;
+      --gold: #8f7bff;
+      --rose: #6f52f5;
+      --shadow: 0 20px 50px rgba(40, 49, 84, 0.16);
+      --radius: 24px;
+      --font: "SUIT Variable", "Pretendard Variable", "Noto Sans KR", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 12%, rgba(132, 102, 255, 0.34), transparent 34%),
+        radial-gradient(circle at 85% 16%, rgba(87, 119, 255, 0.22), transparent 30%),
+        linear-gradient(180deg, #5940ea 0%, #4e3ad4 18%, #eef1f9 54%, #e9edf7 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 16px 64px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 28px;
+      border-radius: 32px;
+      background: linear-gradient(130deg, rgba(82, 58, 236, 0.96), rgba(94, 73, 246, 0.92));
+      border: 1px solid rgba(170, 171, 255, 0.34);
+      box-shadow: var(--shadow);
+      animation: rise 600ms ease both;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -6% -42% auto;
+      width: 340px;
+      height: 340px;
+      background: radial-gradient(circle, rgba(170, 176, 255, 0.4), transparent 68%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #cfd6ff;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 10px 0 8px;
+      font-size: clamp(1.55rem, 3.6vw, 3.2rem);
+      line-height: 0.98;
+      letter-spacing: -0.04em;
+      max-width: none;
+      white-space: nowrap;
+    }
+
+    .hero-subtitle {
+      max-width: 60ch;
+      color: #dce2ff;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .hero h1 {
+      color: #ffffff;
+    }
+
+    .hero-meta {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .meta-pill {
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(235, 239, 255, 0.28);
+      border: 1px solid rgba(209, 215, 255, 0.5);
+      color: #eef1ff;
+      font-size: 0.9rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .card {
+      grid-column: span 12;
+      background: var(--paper);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+      animation: rise 700ms ease both;
+    }
+
+    .card:nth-child(2) { animation-delay: 80ms; }
+    .card:nth-child(3) { animation-delay: 120ms; }
+    .card:nth-child(4) { animation-delay: 160ms; }
+    .card:nth-child(5) { animation-delay: 200ms; }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: end;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+
+    .section-note {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card {
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(240, 244, 255, 0.92));
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .metric-value {
+      font-size: 1.7rem;
+      margin-top: 6px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .project-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    select {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font: inherit;
+      min-width: 280px;
+      background: #f5f7ff;
+      color: var(--ink);
+    }
+
+    .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .chip {
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(90, 63, 240, 0.1);
+      border: 1px solid rgba(90, 63, 240, 0.2);
+      color: #4d40c8;
+      font-size: 0.84rem;
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+    }
+
+    .kv-item {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .kv-item strong,
+    .table th,
+    .budget-label,
+    .timeline-label,
+    .status-text {
+      font-weight: 700;
+    }
+
+    .kv-label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .kv-value {
+      line-height: 1.45;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.85);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 780px;
+    }
+
+    .table th,
+    .table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 0.92rem;
+    }
+
+    .table th {
+      background: rgba(232, 237, 255, 0.92);
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.35;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .budget-table {
+      min-width: 960px;
+      table-layout: fixed;
+    }
+
+    .budget-table th,
+    .budget-table td {
+      padding: 13px 12px;
+      font-size: 0.9rem;
+      white-space: normal;
+      word-break: keep-all;
+    }
+
+    .budget-table th {
+      font-size: 0.78rem;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .budget-table td {
+      line-height: 1.45;
+    }
+
+    .budget-table td:first-child,
+    .budget-table td:nth-child(2),
+    .budget-table td:nth-child(3) {
+      text-align: left;
+    }
+
+    .budget-table th:nth-child(2),
+    .budget-table th:nth-child(3),
+    .budget-table td:nth-child(2),
+    .budget-table td:nth-child(3) {
+      white-space: nowrap;
+      min-width: 96px;
+    }
+
+    .budget-table td:not(:first-child):not(:nth-child(2)):not(:nth-child(3)) {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timeline-board {
+      display: grid;
+      gap: 10px;
+    }
+
+    .timeline-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .timeline-stat {
+      border-radius: 18px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(236, 241, 255, 0.82));
+    }
+
+    .timeline-stat-label {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .timeline-stat-value {
+      margin-top: 6px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .timeline-name {
+      line-height: 1.4;
+    }
+
+    .timeline-table {
+      min-width: 1080px;
+      table-layout: fixed;
+    }
+
+    .timeline-table th,
+    .timeline-table td {
+      padding: 12px 10px;
+      vertical-align: top;
+    }
+
+    .timeline-table th {
+      text-align: center;
+      font-size: 0.78rem;
+    }
+
+    .timeline-table th:nth-child(1),
+    .timeline-table td:nth-child(1) {
+      width: 6%;
+      min-width: 64px;
+    }
+
+    .timeline-table th:nth-child(2),
+    .timeline-table td:nth-child(2) {
+      width: 20%;
+    }
+
+    .timeline-table th:nth-child(4),
+    .timeline-table td:nth-child(4) {
+      width: 62%;
+    }
+
+    .timeline-table th:nth-child(3),
+    .timeline-table td:nth-child(3) {
+      width: 10%;
+    }
+
+    .timeline-table td:nth-child(1),
+    .timeline-table td:nth-child(3) {
+      text-align: center;
+    }
+
+    .timeline-table td:nth-child(1) {
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+
+    .timeline-ruler {
+      display: grid;
+      grid-template-columns: repeat(var(--months), minmax(26px, 1fr));
+      gap: 0;
+      color: var(--muted);
+      font-size: 0.74rem;
+    }
+
+    .timeline-ruler span {
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .timeline-group-row td {
+      background: rgba(90, 63, 240, 0.08);
+      border-top: 1px solid rgba(90, 63, 240, 0.2);
+      border-bottom: 1px solid rgba(90, 63, 240, 0.14);
+      padding: 10px 12px;
+    }
+
+    .timeline-group-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #5042cc;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .timeline-group-count {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .timeline-group-period {
+      margin-left: 10px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 500;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      width: fit-content;
+    }
+
+    .status-badge.completed {
+      background: rgba(45, 155, 108, 0.14);
+      color: #1d7a56;
+    }
+
+    .status-badge.scheduled {
+      background: rgba(149, 164, 207, 0.2);
+      color: #5c678c;
+    }
+
+    .status-badge.in-progress {
+      background: rgba(77, 103, 255, 0.14);
+      color: #4456d9;
+    }
+
+    .status-badge.delayed {
+      background: rgba(217, 60, 60, 0.14);
+      color: #b03030;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .timeline-track {
+      position: relative;
+      min-height: 64px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(251,252,255,0.75);
+      overflow: hidden;
+    }
+
+    .timeline-grid-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: rgba(103, 115, 160, 0.2);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+
+    .timeline-bar {
+      position: absolute;
+      border-radius: 999px;
+      left: 0;
+      width: 0;
+      min-width: 8px;
+      z-index: 2;
+    }
+
+    .timeline-bar.plan {
+      top: 14px;
+      height: 14px;
+      background: linear-gradient(90deg, #059669, #34d399);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3);
+    }
+
+    .timeline-bar.actual {
+      top: 36px;
+      height: 14px;
+      background: linear-gradient(90deg, #2563eb, #60a5fa);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3);
+    }
+
+    .timeline-track.only-plan .timeline-bar.plan {
+      top: 14px;
+      height: 16px;
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,0.45),
+        0 0 0 1px rgba(5, 150, 105, 0.2);
+    }
+
+    .legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend i {
+      width: 24px;
+      height: 10px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .achievement-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .metric-overview {
+      display: grid;
+      gap: 14px;
+    }
+
+    .metric-status-bar {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      overflow: hidden;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.72);
+    }
+
+    .metric-status-segment {
+      min-height: 74px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      color: #fff;
+    }
+
+    .metric-status-segment strong {
+      font-size: 1.4rem;
+      letter-spacing: -0.03em;
+    }
+
+    .metric-status-segment.achieved {
+      background: linear-gradient(135deg, #4d67ff, #7b8dff);
+    }
+
+    .metric-status-segment.unmet {
+      background: linear-gradient(135deg, #6f52f5, #927aff);
+    }
+
+    .metric-status-segment.exceeded {
+      background: linear-gradient(135deg, #0ea5a4, #2dd4bf);
+    }
+
+    .metric-status-segment.unknown {
+      background: linear-gradient(135deg, #8f9ac0, #aab4d9);
+    }
+
+    .metric-grid-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    .metric-grid-table thead th {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 8px 12px;
+      background: rgba(103, 115, 160, 0.07);
+      border-bottom: 1px solid var(--line);
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .metric-grid-table thead th.col-name {
+      text-align: left;
+      min-width: 180px;
+    }
+
+    .metric-grid-table thead th.col-unit,
+    .metric-grid-table tbody td.col-unit {
+      min-width: 84px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .metric-grid-table tbody td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+    }
+
+    .metric-grid-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .metric-name-cell .name {
+      font-size: 0.88rem;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+
+    .metric-name-cell .meta {
+      font-size: 0.76rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .metric-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      border-radius: 10px;
+      padding: 8px 10px;
+      min-width: 84px;
+    }
+
+    .metric-cell.achieved {
+      background: rgba(77, 103, 255, 0.1);
+    }
+
+    .metric-cell.unmet {
+      background: rgba(211, 60, 60, 0.09);
+    }
+
+    .metric-cell.exceeded {
+      background: rgba(45, 212, 191, 0.14);
+    }
+
+    .metric-cell.pending {
+      background: rgba(103, 115, 160, 0.08);
+    }
+
+    .metric-cell.empty {
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .metric-cell-numbers {
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .metric-cell.achieved .metric-cell-numbers { color: #3451d1; }
+    .metric-cell.unmet   .metric-cell-numbers { color: #b03030; }
+    .metric-cell.exceeded .metric-cell-numbers { color: #0f766e; }
+    .metric-cell.pending .metric-cell-numbers { color: var(--muted); }
+
+    .metric-cell-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 1px 8px;
+      border-radius: 20px;
+      color: #fff;
+    }
+
+    .metric-cell.achieved .metric-cell-label { background: #4d67ff; }
+    .metric-cell.unmet   .metric-cell-label { background: #d93c3c; }
+    .metric-cell.exceeded .metric-cell-label { background: #0f9a8e; }
+    .metric-cell.pending .metric-cell-label { background: #8f9ac0; }
+
+    .metric-detail-table {
+      min-width: 720px;
+    }
+
+    .metric-detail-table th,
+    .metric-detail-table td {
+      white-space: nowrap;
+    }
+
+    .metric-detail-table th:last-child,
+    .metric-detail-table td:last-child {
+      white-space: normal;
+      min-width: 340px;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 0.95rem;
+      padding: 18px 0;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 1040px) {
+      .span-4,
+      .span-5,
+      .span-7,
+      .span-8 {
+        grid-column: span 12;
+      }
+
+      .achievement-row {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .metric-status-bar {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .hero,
+      .card {
+        padding: 18px;
+        border-radius: 22px;
+      }
+
+      .budget-row {
+        grid-template-columns: 1fr;
+      }
+
+      select {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .timeline-ruler {
+        font-size: 0.68rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="eyebrow">Project Portfolio Visualizer</div>
+      <h1>Neurophet R&amp;D Project management</h1>
+      <p class="hero-subtitle">projects 폴더의 엑셀을 정규화한 결과를 기반으로 과제 개요, 사업비 흐름, 마일스톤 일정 차이, 정량지표 달성 상태를 한 번에 점검하는 대시보드입니다.</p>
+      <div class="hero-meta" id="heroMeta"></div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">포트폴리오 현황</h2>
+            <p class="section-note">현재 생성된 정규화 데이터 기준 요약입니다.</p>
+          </div>
+        </div>
+        <div class="summary-grid" id="portfolioSummary"></div>
+      </article>
+
+      <article class="card">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">과제 선택</h2>
+            <p class="section-note">새 파일이 추가되면 빌드 스크립트를 다시 실행해 목록을 갱신합니다.</p>
+          </div>
+        </div>
+        <div class="project-toolbar">
+          <select id="projectSelect"></select>
+        </div>
+        <div class="chips" id="sheetChips"></div>
+      </article>
+
+      <article class="card">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">과제 개요</h2>
+            <p class="section-note">개요 시트의 공통 메타 정보를 정규화했습니다.</p>
+          </div>
+        </div>
+        <div class="kv" id="overviewMeta"></div>
+      </article>
+
+      <article class="card">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">사업비 구성</h2>
+            <p class="section-note">단계-연차별 총 사업비와 예산 테이블입니다.</p>
+          </div>
+        </div>
+        <div class="table-wrap" style="margin-top:16px;">
+          <table class="table budget-table">
+            <thead id="budgetHead"></thead>
+            <tbody id="budgetBody"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">마일스톤 타임라인</h2>
+            <p class="section-note">계획 대비 실행 일정의 차이를 월 단위로 비교합니다.</p>
+          </div>
+        </div>
+        <div id="timelineSummary" class="timeline-summary"></div>
+        <div class="table-wrap" style="margin-top:12px;">
+          <table class="table timeline-table">
+            <thead id="timelineHead"></thead>
+            <tbody id="timelineBody"></tbody>
+          </table>
+        </div>
+        <div class="legend">
+          <span><i style="background:linear-gradient(90deg, #059669, #34d399)"></i>계획 일정</span>
+          <span><i style="background:linear-gradient(90deg, #2563eb, #60a5fa)"></i>실행 일정</span>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">정량지표 현황</h2>
+          </div>
+        </div>
+        <div class="metric-overview" id="metricSummary"></div>
+      </article>
+
+      <article class="card">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">정량지표 상세</h2>
+            <p class="section-note">정량지표상세 시트의 원본 행 데이터를 표시합니다.</p>
+          </div>
+        </div>
+        <div class="table-wrap" style="margin-top:12px;">
+          <table class="table metric-detail-table">
+            <thead id="metricDetailHead"></thead>
+            <tbody id="metricDetailBody"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </div>
+
+  <script src="generated/project-data.js"></script>
+  <script>
+    const dataset = window.PROJECT_DATA;
+    let lastGeneratedAt = dataset && dataset.generatedAt ? dataset.generatedAt : null;
+    const DATA_POLL_MS = 4000;
+
+    if (!dataset || !Array.isArray(dataset.projects)) {
+      document.body.innerHTML = '<div style="padding:24px;font-family:sans-serif;">정규화 데이터가 없습니다. build_project_dashboard.py를 먼저 실행하세요.</div>';
+      throw new Error("PROJECT_DATA is missing");
+    }
+
+    const portfolioSummaryEl = document.getElementById("portfolioSummary");
+    const heroMetaEl = document.getElementById("heroMeta");
+    const projectSelectEl = document.getElementById("projectSelect");
+    const sheetChipsEl = document.getElementById("sheetChips");
+    const overviewMetaEl = document.getElementById("overviewMeta");
+    const budgetHeadEl = document.getElementById("budgetHead");
+    const budgetBodyEl = document.getElementById("budgetBody");
+    const timelineHeadEl = document.getElementById("timelineHead");
+    const timelineBodyEl = document.getElementById("timelineBody");
+    const timelineSummaryEl = document.getElementById("timelineSummary");
+    const metricSummaryEl = document.getElementById("metricSummary");
+    const metricDetailHeadEl = document.getElementById("metricDetailHead");
+    const metricDetailBodyEl = document.getElementById("metricDetailBody");
+
+    const overviewFields = [
+      ["projectName", "과제명"],
+      ["projectCode", "과제번호"],
+      ["ministry", "부처"],
+      ["agency", "전문기관"],
+      ["programName", "사업명"],
+      ["owner", "주관/공동"],
+      ["totalPeriod", "총 수행기간"],
+      ["currentPeriod", "당해기간"]
+    ];
+
+    function getProjectLabel(project) {
+      return project.overview.meta.projectName || project.id;
+    }
+
+    function parseNumber(value) {
+      if (value === null || value === undefined || value === "") {
+        return null;
+      }
+      if (typeof value === "number") {
+        return Number.isFinite(value) ? value : null;
+      }
+      const numeric = String(value).replace(/,/g, "").match(/-?\d+(\.\d+)?/);
+      return numeric ? Number(numeric[0]) : null;
+    }
+
+    function formatCurrency(value) {
+      const parsed = parseNumber(value);
+      if (parsed === null) {
+        return value ?? "-";
+      }
+      return new Intl.NumberFormat("ko-KR").format(parsed) + " 원";
+    }
+
+    function isBudgetCurrencyHeader(header) {
+      return /금|사업비|기술료|지방비|현금|현물/.test(header);
+    }
+
+    function formatBudgetCell(header, value) {
+      if (value === null || value === undefined || value === "" || value === "#REF!") {
+        return "-";
+      }
+
+      const parsed = parseNumber(value);
+      if (parsed !== null && isBudgetCurrencyHeader(header)) {
+        return new Intl.NumberFormat("ko-KR").format(parsed);
+      }
+
+      return value;
+    }
+
+    function deriveMetricState(period, fallbackTarget) {
+      const targetRaw = period ? (period.target ?? fallbackTarget) : fallbackTarget;
+      const actualRaw = period ? period.actual : null;
+      const target = parseNumber(targetRaw);
+      const actual = parseNumber(actualRaw);
+
+      if (target === null && actual !== null) {
+        return "exceeded";
+      }
+
+      if (target !== null && actual !== null) {
+        if (target === 0) return "exceeded";
+        if (actual > target) return "exceeded";
+        if (actual < target) return "unmet";
+        return "achieved";
+      }
+
+      const rate = period && period.rate;
+      if (rate === "초과달성") return "exceeded";
+      if (rate === "달성") return "achieved";
+      if (rate === "미달성") return "unmet";
+      return "unknown";
+    }
+
+    function countMetricStates(project) {
+      const counts = { achieved: 0, exceeded: 0, unmet: 0, unknown: 0 };
+      project.metrics.items.forEach((item) => {
+        item.periods.forEach((period) => {
+          const state = deriveMetricState(period, item.organization);
+          counts[state] = (counts[state] || 0) + 1;
+        });
+      });
+      return counts;
+    }
+
+    function getTimelineRange(project) {
+      const allDates = [];
+      project.milestones.items.forEach((item) => {
+        [item.planStart, item.planEnd, item.actualStart, item.actualEnd].forEach((value) => {
+          if (value) {
+            allDates.push(value);
+          }
+        });
+      });
+
+      if (!allDates.length) {
+        return null;
+      }
+
+      const sorted = allDates
+        .map((value) => new Date(value + "T00:00:00"))
+        .sort((a, b) => a - b);
+      const start = new Date(sorted[0].getFullYear(), sorted[0].getMonth(), 1);
+      const end = new Date(sorted[sorted.length - 1].getFullYear(), sorted[sorted.length - 1].getMonth(), 1);
+      return { start, end };
+    }
+
+    function monthsBetween(start, end) {
+      return (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
+    }
+
+    function monthIndex(rangeStart, value) {
+      const date = new Date(value + "T00:00:00");
+      return (date.getFullYear() - rangeStart.getFullYear()) * 12 + (date.getMonth() - rangeStart.getMonth());
+    }
+
+    function parseDateOnly(value) {
+      if (!value) return null;
+      const date = new Date(`${value}T00:00:00`);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    function deriveMilestoneStatus(item) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const planStart = parseDateOnly(item.planStart);
+      const actualStart = parseDateOnly(item.actualStart);
+      const actualEnd = parseDateOnly(item.actualEnd);
+
+      if (actualEnd) return "completed";
+      if (actualStart) return "in-progress";
+      if (planStart && planStart >= today) return "scheduled";
+      if (planStart && planStart < today) return "delayed";
+      return "scheduled";
+    }
+
+    function statusLabel(status) {
+      const labels = {
+        completed: "종료",
+        "in-progress": "진행중",
+        scheduled: "예정",
+        delayed: "지연"
+      };
+      return labels[status] || status;
+    }
+
+    function renderPortfolioSummary() {
+      const totalMilestones = dataset.projects.reduce((sum, project) => sum + project.milestones.items.length, 0);
+      const totalMetrics = dataset.projects.reduce((sum, project) => sum + project.metrics.items.length, 0);
+      const totalBudget = dataset.projects.reduce((sum, project) => {
+        const summary = project.budget.summary;
+        const value = summary ? parseNumber(summary["총 사업비"]) : null;
+        return sum + (value || 0);
+      }, 0);
+
+      const cards = [
+        ["등록 과제 수", dataset.projectCount + "개"],
+        ["누적 마일스톤", totalMilestones + "건"],
+        ["정량지표 항목", totalMetrics + "개"],
+        ["총 사업비 합계", new Intl.NumberFormat("ko-KR").format(totalBudget) + " 원"]
+      ];
+
+      portfolioSummaryEl.innerHTML = cards.map(([label, value]) => `
+        <div class="metric-card">
+          <div class="metric-label">${label}</div>
+          <div class="metric-value">${value}</div>
+        </div>
+      `).join("");
+
+      heroMetaEl.innerHTML = [
+        `원본 경로: ${dataset.sourceDirectory}`,
+        `생성 시각: ${dataset.generatedAt}`,
+        `현재 파일 수: ${dataset.projectCount}`
+      ].map((text) => `<span class="meta-pill">${text}</span>`).join("");
+    }
+
+    function renderProjectOptions() {
+      projectSelectEl.innerHTML = dataset.projects
+        .map((project, index) => `<option value="${project.id}" ${index === 0 ? "selected" : ""}>${getProjectLabel(project)} · ${project.id}</option>`)
+        .join("");
+    }
+
+    function renderOverview(project) {
+      sheetChipsEl.innerHTML = project.sheetNames.map((name) => `<span class="chip">${name}</span>`).join("");
+      overviewMetaEl.innerHTML = overviewFields.map(([key, label]) => {
+        const value = project.overview.meta[key] || "-";
+        return `
+          <div class="kv-item">
+            <div class="kv-label">${label}</div>
+            <div class="kv-value">${value}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderBudget(project) {
+      const headers = project.budget.headers;
+      budgetHeadEl.innerHTML = `<tr>${headers.map((header) => `<th>${header}</th>`).join("")}</tr>`;
+      budgetBodyEl.innerHTML = project.budget.items.map((item) => `
+        <tr>${headers.map((header) => `<td>${formatBudgetCell(header, item[header])}</td>`).join("")}</tr>
+      `).join("");
+    }
+
+    function renderTimeline(project) {
+      const milestones = project.milestones.items || [];
+      const budgetPhases = (project.budget.items || []).map((item) => ({
+        phase: item["단계-연차"],
+        start: item["시작일"],
+        end: item["종료일"],
+      })).filter((item) => item.phase && item.start && item.end);
+
+      if (!milestones.length && !budgetPhases.length) {
+        timelineHeadEl.innerHTML = "";
+        timelineSummaryEl.innerHTML = "";
+        timelineBodyEl.innerHTML = '<tr><td colspan="4" class="empty">마일스톤 데이터가 없습니다.</td></tr>';
+        return;
+      }
+
+      const statusCounts = milestones.reduce((counts, item) => {
+        const status = deriveMilestoneStatus(item);
+        counts[status] = (counts[status] || 0) + 1;
+        return counts;
+      }, { completed: 0, "in-progress": 0, scheduled: 0, delayed: 0 });
+
+      timelineSummaryEl.innerHTML = [
+        ["전체 마일스톤", milestones.length],
+        ["진행중", statusCounts["in-progress"]],
+        ["종료", statusCounts.completed],
+        ["예정", statusCounts.scheduled],
+        ["지연", statusCounts.delayed]
+      ].map(([label, value]) => `
+        <div class="timeline-stat">
+          <div class="timeline-stat-label">${label}</div>
+          <div class="timeline-stat-value">${value}</div>
+        </div>
+      `).join("");
+
+      timelineHeadEl.innerHTML = `
+        <tr>
+          <th>번호</th>
+          <th>개발내용</th>
+          <th>상태</th>
+          <th>타임라인</th>
+        </tr>
+      `;
+
+      const toDate = (value) => value ? new Date(`${value}T00:00:00`) : null;
+      const monthStart = (value) => new Date(value.getFullYear(), value.getMonth(), 1);
+      const monthDiff = (start, end) => (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+
+      function overlapsRange(startValue, endValue, rangeStart, rangeEnd) {
+        const start = toDate(startValue);
+        const end = toDate(endValue);
+        if (!start || !end) return false;
+        return start <= rangeEnd && end >= rangeStart;
+      }
+
+      function clipForRange(startValue, endValue, axisStart, axisEnd) {
+        const start = toDate(startValue);
+        const end = toDate(endValue);
+        if (!start || !end) return null;
+
+        const clippedStart = start > axisStart ? start : axisStart;
+        const clippedEnd = end < axisEnd ? end : axisEnd;
+        if (clippedStart > clippedEnd) return null;
+
+        const axisMonthStart = monthStart(axisStart);
+        const startIndex = monthDiff(axisMonthStart, monthStart(clippedStart));
+        const endIndex = monthDiff(axisMonthStart, monthStart(clippedEnd));
+        return {
+          start: startIndex,
+          span: Math.max(endIndex - startIndex + 1, 1),
+        };
+      }
+
+      const rows = budgetPhases.map((phaseItem) => {
+        const axisStart = toDate(phaseItem.start);
+        const axisEnd = toDate(phaseItem.end);
+        if (!axisStart || !axisEnd) {
+          return "";
+        }
+
+        const axisMonthStart = monthStart(axisStart);
+        const axisMonthEnd = monthStart(axisEnd);
+        const axisMonths = monthsBetween(axisMonthStart, axisMonthEnd);
+        const labelStep = axisMonths > 30 ? 3 : axisMonths > 18 ? 2 : 1;
+
+        const labels = Array.from({ length: axisMonths }, (_, index) => {
+          const current = new Date(axisMonthStart.getFullYear(), axisMonthStart.getMonth() + index, 1);
+          const monthText = `${current.getFullYear().toString().slice(2)}.${String(current.getMonth() + 1).padStart(2, "0")}`;
+          const shouldShow = index % labelStep === 0 || current.getMonth() === 0;
+          return `<span title="${monthText}">${shouldShow ? monthText : ""}</span>`;
+        }).join("");
+
+        const matchedMilestones = milestones.filter((item) => {
+          const planOverlap = overlapsRange(item.planStart, item.planEnd, axisStart, axisEnd);
+          const actualOverlap = overlapsRange(item.actualStart, item.actualEnd, axisStart, axisEnd);
+          return planOverlap || actualOverlap;
+        });
+
+        const groupRows = matchedMilestones.map((item) => {
+          const itemStatus = deriveMilestoneStatus(item);
+          const planClip = clipForRange(item.planStart, item.planEnd, axisStart, axisEnd);
+          const actualClip = clipForRange(item.actualStart, item.actualEnd, axisStart, axisEnd);
+
+          const toPercent = (clip) => {
+            if (!clip || !axisMonths) return null;
+            const left = (clip.start / axisMonths) * 100;
+            const width = Math.max((clip.span / axisMonths) * 100, 0.6);
+            return `left:${left}%;width:${width}%;`;
+          };
+
+          const planStyle = toPercent(planClip);
+          const actualStyle = toPercent(actualClip);
+          const trackClass = actualStyle ? "timeline-track" : "timeline-track only-plan";
+
+          const gridLines = Array.from({ length: axisMonths - 1 }, (_, i) => {
+            const leftPct = ((i + 1) / axisMonths) * 100;
+            return `<div class="timeline-grid-line" style="left:${leftPct}%"></div>`;
+          }).join("");
+
+          const bars = `
+            ${gridLines}
+            ${planStyle ? `<div class="timeline-bar plan" style="${planStyle}"></div>` : ""}
+            ${actualStyle ? `<div class="timeline-bar actual" style="${actualStyle}"></div>` : ""}
+          `;
+
+          return `
+            <tr>
+              <td>${item.no ?? "-"}</td>
+              <td class="timeline-name">${item.content || "-"}</td>
+              <td><span class="status-badge ${itemStatus}"><span class="status-dot"></span><span class="status-text">${statusLabel(itemStatus)}</span></span></td>
+              <td><div class="${trackClass}" style="--months:${axisMonths};">${bars}</div></td>
+            </tr>
+          `;
+        }).join("");
+
+        const emptyGridLines = Array.from({ length: axisMonths - 1 }, (_, i) => {
+          const leftPct = ((i + 1) / axisMonths) * 100;
+          return `<div class="timeline-grid-line" style="left:${leftPct}%"></div>`;
+        }).join("");
+
+        const emptyRow = `
+          <tr>
+            <td>-</td>
+            <td class="timeline-name" style="color:var(--muted);">해당 연차와 겹치는 마일스톤이 없습니다.</td>
+            <td>-</td>
+            <td><div class="timeline-track" style="--months:${axisMonths};">${emptyGridLines}</div></td>
+          </tr>
+        `;
+
+        return `
+          <tr class="timeline-group-row">
+            <td colspan="3">
+              <span class="timeline-group-title">${phaseItem.phase}</span>
+              <span class="timeline-group-count">${matchedMilestones.length}건</span>
+              <span class="timeline-group-period">${phaseItem.start} ~ ${phaseItem.end}</span>
+            </td>
+            <td><div class="timeline-ruler" style="--months:${axisMonths};">${labels}</div></td>
+          </tr>
+          ${matchedMilestones.length ? groupRows : emptyRow}
+        `;
+      }).join("");
+
+      timelineBodyEl.innerHTML = rows;
+    }
+
+    function renderMetricSummary(project) {
+      const counts = countMetricStates(project);
+      const total = Math.max(counts.achieved + counts.exceeded + counts.unmet + counts.unknown, 1);
+      const periods = project.metrics.periods;
+
+      const summaryBar = `
+        <div class="metric-status-bar">
+          <div class="metric-status-segment achieved">
+            <div>달성</div>
+            <strong>${counts.achieved}</strong>
+            <div>${((counts.achieved / total) * 100).toFixed(0)}%</div>
+          </div>
+          <div class="metric-status-segment exceeded">
+            <div>초과달성</div>
+            <strong>${counts.exceeded}</strong>
+            <div>${((counts.exceeded / total) * 100).toFixed(0)}%</div>
+          </div>
+          <div class="metric-status-segment unmet">
+            <div>미달</div>
+            <strong>${counts.unmet}</strong>
+            <div>${((counts.unmet / total) * 100).toFixed(0)}%</div>
+          </div>
+          <div class="metric-status-segment unknown">
+            <div>미입력</div>
+            <strong>${counts.unknown}</strong>
+            <div>${((counts.unknown / total) * 100).toFixed(0)}%</div>
+          </div>
+        </div>
+      `;
+
+      const headerCols = periods.map((p) => `
+        <th>${p}<br><span style="font-weight:400;font-size:0.71rem;">실적 / 목표</span></th>
+      `).join("");
+
+      const rowsMarkup = project.metrics.items.map((item) => {
+        const byPeriod = Object.fromEntries(item.periods.map((p) => [p.period, p]));
+        const periodCells = periods.map((period) => {
+          const entry = byPeriod[period];
+          const targetRaw = entry ? (entry.target ?? item.organization) : item.organization;
+          const actualRaw = entry ? entry.actual : null;
+          const targetNum = parseNumber(targetRaw);
+          const actualNum = parseNumber(actualRaw);
+          const isEmpty = targetNum === null && actualNum === null && !(entry && entry.rate);
+
+          if (isEmpty) {
+            return `<td><div class="metric-cell empty">-</div></td>`;
+          }
+
+          const state = deriveMetricState(entry, item.organization);
+          const tone = state === "unknown" ? "pending" : state;
+          const badgeText = state === "achieved"
+            ? "달성"
+            : state === "exceeded"
+              ? "초과달성"
+              : state === "unmet"
+                ? "미달"
+                : "미입력";
+
+          const tgt = targetRaw ?? "-";
+          const act = actualRaw ?? "-";
+          return `
+            <td>
+              <div class="metric-cell ${tone}">
+                <div class="metric-cell-numbers">${act} / ${tgt}</div>
+                <span class="metric-cell-label">${badgeText}</span>
+              </div>
+            </td>
+          `;
+        }).join("");
+
+        return `
+          <tr>
+            <td class="metric-name-cell">
+              <div class="name">${item.metricName || "-"}</div>
+              ${item.verification ? `<div class="meta">${item.verification}</div>` : ""}
+            </td>
+            <td class="col-unit">${item.unit || "-"}</td>
+            ${periodCells}
+          </tr>
+        `;
+      }).join("");
+
+      const tableMarkup = project.metrics.items.length ? `
+        <table class="metric-grid-table">
+          <thead>
+            <tr>
+              <th class="col-name">지표명</th>
+              <th class="col-unit">단위</th>
+              ${headerCols}
+            </tr>
+          </thead>
+          <tbody>${rowsMarkup}</tbody>
+        </table>
+      ` : `<div class="empty">정량지표 데이터가 없습니다.</div>`;
+
+      metricSummaryEl.innerHTML = summaryBar + tableMarkup;
+    }
+
+    function renderMetricDetail(project) {
+      const detail = project.metricsDetail || { headers: [], items: [] };
+      const headers = Array.isArray(detail.headers) ? detail.headers : [];
+      const items = Array.isArray(detail.items) ? detail.items : [];
+
+      if (!headers.length) {
+        metricDetailHeadEl.innerHTML = "";
+        metricDetailBodyEl.innerHTML = '<tr><td class="empty">정량지표상세 데이터가 없습니다.</td></tr>';
+        return;
+      }
+
+      metricDetailHeadEl.innerHTML = `<tr>${headers.map((header) => `<th>${header || "-"}</th>`).join("")}</tr>`;
+
+      if (!items.length) {
+        metricDetailBodyEl.innerHTML = `<tr><td colspan="${headers.length}" class="empty">정량지표상세 데이터가 없습니다.</td></tr>`;
+        return;
+      }
+
+      metricDetailBodyEl.innerHTML = items.map((item) => `
+        <tr>${headers.map((header) => `<td>${item[header] ?? "-"}</td>`).join("")}</tr>
+      `).join("");
+    }
+
+    function renderProject(projectId) {
+      const project = dataset.projects.find((item) => item.id === projectId) || dataset.projects[0];
+      renderOverview(project);
+      renderBudget(project);
+      renderTimeline(project);
+      renderMetricSummary(project);
+      renderMetricDetail(project);
+      projectSelectEl.value = project.id;
+    }
+
+    function checkForDataUpdates() {
+      const script = document.createElement("script");
+      script.src = `generated/project-data.js?ts=${Date.now()}`;
+      script.async = true;
+
+      script.onload = () => {
+        const nextGeneratedAt = window.PROJECT_DATA && window.PROJECT_DATA.generatedAt;
+        if (lastGeneratedAt && nextGeneratedAt && nextGeneratedAt !== lastGeneratedAt) {
+          window.location.reload();
+          return;
+        }
+        if (!lastGeneratedAt && nextGeneratedAt) {
+          lastGeneratedAt = nextGeneratedAt;
+        }
+        script.remove();
+      };
+
+      script.onerror = () => {
+        script.remove();
+      };
+
+      document.head.appendChild(script);
+    }
+
+    renderPortfolioSummary();
+    renderProjectOptions();
+    renderProject(dataset.projects[0].id);
+    setInterval(checkForDataUpdates, DATA_POLL_MS);
+
+    projectSelectEl.addEventListener("change", (event) => {
+      renderProject(event.target.value);
+    });
+  </script>
+</body>
+</html>
