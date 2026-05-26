@@ -781,7 +781,7 @@
 
       const columns = Object.keys(rows[0]);
       const display = rows.slice(0, 120);
-      const alignedSections = new Set(["사업비", "마일스톤", "정량지표"]);
+      const alignedSections = new Set(["사업비", "정량지표"]);
       const useAlignmentRules = alignedSections.has(sectionName);
 
       const numericCols = new Set();
@@ -816,7 +816,7 @@
           const formatted = formatter(c, row[c]);
           let cls = "";
 
-          if (sectionName === "사업비") {
+          if (sectionName === "사업비" || sectionName === "마일스톤") {
             const text = String(formatted ?? "").trim();
             cls = commaNumberRe.test(text) ? "num-cell" : "mid-cell";
           } else if (useAlignmentRules) {
