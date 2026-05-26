@@ -259,6 +259,10 @@
       text-align: left;
     }
 
+    .sheet-table tbody td.mid-cell {
+      text-align: center;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -800,6 +804,8 @@
           ? (col, val) => formatMilestoneCell(col, val)
           : (_col, val) => (val ?? "");
 
+      const commaNumberRe = /^-?\d{1,3}(,\d{3})+(\.\d+)?$/;
+
       const thead = sectionName === "마일스톤"
         ? milestoneThead(columns)
         : sectionName === "정량지표"
@@ -807,10 +813,17 @@
           : `<thead><tr>${columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`;
       const tbody = `<tbody>${display
         .map((row) => `<tr>${columns.map((c) => {
-          const cls = useAlignmentRules
-            ? (numericCols.has(c) ? "num-cell" : "txt-cell")
-            : "";
-          return `<td class="${cls}">${formatter(c, row[c])}</td>`;
+          const formatted = formatter(c, row[c]);
+          let cls = "";
+
+          if (sectionName === "사업비") {
+            const text = String(formatted ?? "").trim();
+            cls = commaNumberRe.test(text) ? "num-cell" : "mid-cell";
+          } else if (useAlignmentRules) {
+            cls = numericCols.has(c) ? "num-cell" : "txt-cell";
+          }
+
+          return `<td class="${cls}">${formatted}</td>`;
         }).join("")}</tr>`)
         .join("")}</tbody>`;
       const classList = ["sheet-table"];
