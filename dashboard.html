@@ -215,6 +215,18 @@
       box-shadow: 0 6px 14px rgba(67, 90, 208, 0.25);
     }
 
+    .merged-sheet {
+      display: grid;
+      gap: 14px;
+    }
+
+    .merged-title {
+      margin-bottom: 6px;
+      color: #33486f;
+      font-weight: 800;
+      font-size: 0.92rem;
+    }
+
     .card-title {
       margin: 0 0 8px;
       font-weight: 800;
@@ -376,8 +388,7 @@
     const SHEET_TABS = [
       { key: "사업비", label: "사업비", hint: "사업비 시트 상위 120행" },
       { key: "마일스톤", label: "마일스톤", hint: "마일스톤 시트 상위 120행" },
-      { key: "정량지표", label: "정량지표", hint: "정량지표 시트 상위 120행" },
-      { key: "정량지표상세", label: "정량지표상세", hint: "정량지표상세 시트 상위 120행" }
+      { key: "정량지표묶음", label: "정량지표", hint: "정량지표 + 정량지표상세 시트 상위 120행" }
     ];
 
     function setMessage(text) {
@@ -663,10 +674,9 @@
       return `<thead><tr>${row1}</tr><tr>${row2}</tr></thead>`;
     }
 
-    function renderSheetTable(rows, targetWrap, sectionName = "") {
+    function buildSheetTableHtml(rows, sectionName = "") {
       if (!rows.length) {
-        targetWrap.innerHTML = "데이터가 없습니다.";
-        return;
+        return "데이터가 없습니다.";
       }
 
       const columns = Object.keys(rows[0]);
@@ -684,7 +694,11 @@
         .map((row) => `<tr>${columns.map((c) => `<td>${formatter(c, row[c])}</td>`).join("")}</tr>`)
         .join("")}</tbody>`;
       const tableClass = sectionName === "마일스톤" ? "multi-head" : "";
-      targetWrap.innerHTML = `<table class="${tableClass}">${thead}${tbody}</table>`;
+      return `<table class="${tableClass}">${thead}${tbody}</table>`;
+    }
+
+    function renderSheetTable(rows, targetWrap, sectionName = "") {
+      targetWrap.innerHTML = buildSheetTableHtml(rows, sectionName);
     }
 
     function renderSheetTabs(project) {
@@ -698,8 +712,7 @@
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = `subtab-btn${tab.key === state.activeSheetTab ? " active" : ""}`;
-        const count = (project.sheets[tab.key] || []).length;
-        btn.textContent = `${tab.label} (${count})`;
+        btn.textContent = tab.label;
         btn.addEventListener("click", () => {
           state.activeSheetTab = tab.key;
           renderSheetTabs(project);
@@ -711,8 +724,28 @@
 
     function renderActiveSheet(project) {
       const tab = SHEET_TABS.find((t) => t.key === state.activeSheetTab) || SHEET_TABS[0];
-      const rows = project.sheets[tab.key] || [];
       sheetHint.textContent = tab.hint;
+
+      if (tab.key === "정량지표묶음") {
+        const metricRows = project.sheets["정량지표"] || [];
+        const metricDetailRows = project.sheets["정량지표상세"] || [];
+
+        activeSheetWrap.innerHTML = `
+          <div class="merged-sheet">
+            <div>
+              <div class="merged-title">정량지표</div>
+              ${buildSheetTableHtml(metricRows, "정량지표")}
+            </div>
+            <div>
+              <div class="merged-title">정량지표상세</div>
+              ${buildSheetTableHtml(metricDetailRows, "정량지표상세")}
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const rows = project.sheets[tab.key] || [];
       renderSheetTable(rows, activeSheetWrap, tab.key);
     }
 
