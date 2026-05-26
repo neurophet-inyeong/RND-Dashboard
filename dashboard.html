@@ -499,6 +499,50 @@
         });
     }
 
+    function parseMetricRows(workbook, sheetName) {
+      const ws = workbook.Sheets[sheetName];
+      if (!ws) return [];
+
+      const matrix = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+      const topRaw = matrix[0] || [];
+      const subRaw = matrix[1] || [];
+
+      const top = topRaw.map((v) => normalizeKey(v));
+      const sub = subRaw.map((v) => normalizeKey(v));
+      const groupedKeys = new Set(["목표", "달성"]);
+
+      const combined = top.map((t, i) => {
+        const s = sub[i] || "";
+
+        if (groupedKeys.has(t)) {
+          return `${t}|${s || `항목_${i + 1}`}`;
+        }
+
+        if (t && !/^Unnamed/i.test(t)) {
+          return t;
+        }
+
+        if (s) {
+          return s;
+        }
+
+        return `미지정_${i + 1}`;
+      });
+
+      const header = makeUniqueHeaders(combined);
+      const body = matrix.slice(2);
+
+      return body
+        .filter((r) => Array.isArray(r) && r.some((v) => v !== null && String(v).trim() !== ""))
+        .map((r) => {
+          const out = {};
+          header.forEach((h, i) => {
+            out[h] = r[i] ?? null;
+          });
+          return out;
+        });
+    }
+
     function getActiveProject() {
       if (!state.projects.length) return null;
       if (!state.activeProject) return state.projects[0];
@@ -674,6 +718,46 @@
       return `<thead><tr>${row1}</tr><tr>${row2}</tr></thead>`;
     }
 
+    function metricThead(columns) {
+      const tokens = columns.map((col) => {
+        const parts = String(col).split("|");
+        if (parts.length >= 2 && (parts[0] === "목표" || parts[0] === "달성")) {
+          return { grouped: true, group: parts[0], label: parts.slice(1).join("|") };
+        }
+        return { grouped: false, group: "", label: col };
+      });
+
+      const hasGrouped = tokens.some((t) => t.grouped);
+      if (!hasGrouped) {
+        return `<thead><tr>${columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`;
+      }
+
+      let row1 = "";
+      let i = 0;
+      while (i < tokens.length) {
+        const t = tokens[i];
+        if (!t.grouped) {
+          row1 += `<th rowspan="2">${t.label}</th>`;
+          i += 1;
+          continue;
+        }
+
+        let span = 1;
+        while (i + span < tokens.length && tokens[i + span].grouped && tokens[i + span].group === t.group) {
+          span += 1;
+        }
+        row1 += `<th colspan="${span}">${t.group}</th>`;
+        i += span;
+      }
+
+      const row2 = tokens
+        .filter((t) => t.grouped)
+        .map((t) => `<th>${t.label}</th>`)
+        .join("");
+
+      return `<thead><tr>${row1}</tr><tr>${row2}</tr></thead>`;
+    }
+
     function buildSheetTableHtml(rows, sectionName = "") {
       if (!rows.length) {
         return "데이터가 없습니다.";
@@ -689,11 +773,13 @@
 
       const thead = sectionName === "마일스톤"
         ? milestoneThead(columns)
-        : `<thead><tr>${columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`;
+        : sectionName === "정량지표"
+          ? metricThead(columns)
+          : `<thead><tr>${columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`;
       const tbody = `<tbody>${display
         .map((row) => `<tr>${columns.map((c) => `<td>${formatter(c, row[c])}</td>`).join("")}</tr>`)
         .join("")}</tbody>`;
-      const tableClass = sectionName === "마일스톤" ? "multi-head" : "";
+      const tableClass = (sectionName === "마일스톤" || sectionName === "정량지표") ? "multi-head" : "";
       return `<table class="${tableClass}">${thead}${tbody}</table>`;
     }
 
@@ -772,6 +858,8 @@
         wb.SheetNames.forEach((sheetName) => {
           if (sheetName === "마일스톤") {
             sheets[sheetName] = parseMilestoneRows(wb, sheetName);
+          } else if (sheetName === "정량지표") {
+            sheets[sheetName] = parseMetricRows(wb, sheetName);
           } else {
             sheets[sheetName] = sheetRows(wb, sheetName, 1);
           }
