@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>R&D 성과지표 대시보드</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #f3f5f8;
+      --sidebar: #e9ecf2;
+      --panel: #ffffff;
+      --soft-panel: #eef1f7;
+      --line: #d8dde7;
+      --text: #1d2a40;
+      --muted: #5f6d86;
+      --accent: #4a66ff;
+      --danger: #f14d4d;
+      --dark: #4c4c4c;
+      --radius: 14px;
+      --shadow: 0 10px 24px rgba(27, 45, 75, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 270px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: var(--sidebar);
+      border-right: 1px solid #d2d8e3;
+      padding: 22px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .logo {
+      font-weight: 800;
+      font-size: 2rem;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #cfd6e2;
+    }
+
+    .s-title {
+      font-weight: 800;
+      color: #2a3b56;
+      margin: 4px 0 6px;
+    }
+
+    .menu-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .menu-btn {
+      border: 1px solid #ccd4e2;
+      background: #f8faff;
+      color: #2d3c55;
+      border-radius: 10px;
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .menu-btn.active {
+      background: linear-gradient(135deg, #5570ff, #435ad0);
+      color: #fff;
+      border-color: #435ad0;
+      box-shadow: 0 8px 18px rgba(67, 90, 208, 0.28);
+    }
+
+    .menu-btn.secondary {
+      background: #fff;
+      font-weight: 600;
+    }
+
+    .divider {
+      margin-top: 8px;
+      border-top: 1px solid #cfd6e2;
+      padding-top: 12px;
+    }
+
+    .main {
+      padding: 24px 24px 30px;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .page-title {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .refresh-btn {
+      border: 1px solid #c6cede;
+      background: #fff;
+      color: #30425f;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 10px 14px;
+      cursor: pointer;
+    }
+
+    .meta {
+      display: grid;
+      gap: 6px;
+      width: 260px;
+    }
+
+    .meta label {
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .meta input {
+      border: 1px solid #d3d9e5;
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 0.95rem;
+      color: #2f3f5e;
+      background: #fff;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .overview-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 0;
+      font-size: 0.92rem;
+    }
+
+    .overview-table th,
+    .overview-table td {
+      border-bottom: 1px solid #e8edf5;
+      padding: 8px 10px;
+      vertical-align: top;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .overview-table th {
+      width: 180px;
+      background: transparent;
+      color: #5f7090;
+      font-weight: 700;
+      position: static;
+    }
+
+    .overview-table td {
+      color: #23395f;
+      font-weight: 600;
+    }
+
+    .sheet-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .card-title {
+      margin: 0 0 8px;
+      font-weight: 800;
+      color: #2f3f5e;
+      font-size: 1.02rem;
+    }
+
+    .table-wrap {
+      max-height: 310px;
+      overflow: auto;
+      border: 1px solid #dce3ef;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 700px;
+      font-size: 0.9rem;
+    }
+
+    th,
+    td {
+      text-align: left;
+      border-bottom: 1px solid #ecf0f7;
+      padding: 8px 10px;
+      white-space: nowrap;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #f4f7fd;
+      color: #3a4f74;
+      z-index: 1;
+    }
+
+    .hint {
+      margin: 2px 0 0;
+      color: #6a7b99;
+      font-size: 0.84rem;
+    }
+
+    .warn {
+      border: 1px solid #f1d3a4;
+      background: #fff6e8;
+      color: #8a5b11;
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 0.87rem;
+      display: none;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 1200px) {
+    }
+
+    @media (max-width: 860px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        border-right: 0;
+        border-bottom: 1px solid #d2d8e3;
+      }
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .meta {
+        width: 100%;
+        max-width: 300px;
+      }
+      .overview-table th {
+        width: 130px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo">RnD Dashboard</div>
+
+      <div>
+        <div class="s-title">Project Data</div>
+        <div id="projectMenu" class="menu-list"></div>
+      </div>
+
+      <div class="divider">
+        <button id="reloadProjectBtn" class="menu-btn secondary">프로젝트 폴더 다시 읽기</button>
+        <button id="uploadBtn" class="menu-btn secondary">엑셀 직접 업로드</button>
+        <input id="fileInput" class="hidden" type="file" accept=".xlsx,.xls,.xlsm" multiple />
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <h1 class="page-title">과제 현황</h1>
+        <button id="refreshBtn" class="refresh-btn">데이터 새로고침</button>
+      </div>
+
+      <div class="meta">
+        <label for="baseDate">조회 기준일</label>
+        <input id="baseDate" type="text" readonly />
+      </div>
+
+      <div id="message" class="warn"></div>
+
+      <section class="card">
+        <h2 class="card-title">개요</h2>
+        <div class="table-wrap">
+          <div id="overviewGrid"></div>
+        </div>
+      </section>
+
+      <section class="sheet-stack">
+        <article class="card">
+          <h2 class="card-title">사업비</h2>
+          <p class="hint">사업비 시트 상위 120행</p>
+          <div id="budgetTableWrap" class="table-wrap"></div>
+        </article>
+
+        <article class="card">
+          <h2 class="card-title">마일스톤</h2>
+          <p class="hint">마일스톤 시트 상위 120행</p>
+          <div id="milestoneTableWrap" class="table-wrap"></div>
+        </article>
+
+        <article class="card">
+          <h2 class="card-title">정량지표</h2>
+          <p class="hint">정량지표 시트 상위 120행</p>
+          <div id="metricTableWrap" class="table-wrap"></div>
+        </article>
+
+        <article class="card">
+          <h2 class="card-title">정량지표상세</h2>
+          <p class="hint">정량지표상세 시트 상위 120행</p>
+          <div id="metricDetailTableWrap" class="table-wrap"></div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      projects: [],
+      activeProject: ""
+    };
+    let lastReloadToken = "";
+
+    const projectMenu = document.getElementById("projectMenu");
+    const reloadProjectBtn = document.getElementById("reloadProjectBtn");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const fileInput = document.getElementById("fileInput");
+    const messageEl = document.getElementById("message");
+    const baseDate = document.getElementById("baseDate");
+
+    const overviewGrid = document.getElementById("overviewGrid");
+    const budgetTableWrap = document.getElementById("budgetTableWrap");
+    const milestoneTableWrap = document.getElementById("milestoneTableWrap");
+    const metricTableWrap = document.getElementById("metricTableWrap");
+    const metricDetailTableWrap = document.getElementById("metricDetailTableWrap");
+
+    function setMessage(text) {
+      if (!text) {
+        messageEl.style.display = "none";
+        messageEl.textContent = "";
+        return;
+      }
+      messageEl.style.display = "block";
+      messageEl.textContent = text;
+    }
+
+    function formatDateToday() {
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${yyyy}/${mm}/${dd}`;
+    }
+
+    function normalizeKey(key) {
+      return String(key || "")
+        .replace(/[\n\r]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function isExcelPath(path) {
+      return /\.(xlsx|xls|xlsm)$/i.test(path);
+    }
+
+    function sheetRows(workbook, sheetName) {
+      if (!workbook.Sheets[sheetName]) return [];
+      const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: null });
+      return rows.map((row) => {
+        const out = {};
+        for (const [k, v] of Object.entries(row)) {
+          out[normalizeKey(k) || "미지정"] = v;
+        }
+        return out;
+      });
+    }
+
+    function getActiveProject() {
+      if (!state.projects.length) return null;
+      if (!state.activeProject) return state.projects[0];
+      return state.projects.find((p) => p.name === state.activeProject) || state.projects[0];
+    }
+
+    function renderProjectMenu() {
+      projectMenu.innerHTML = "";
+      for (const project of state.projects) {
+        const btn = document.createElement("button");
+        btn.className = `menu-btn${project.name === state.activeProject ? " active" : ""}`;
+        btn.textContent = `📊 ${project.name}`;
+        btn.addEventListener("click", () => {
+          state.activeProject = project.name;
+          renderProjectMenu();
+          renderDashboard();
+        });
+        projectMenu.appendChild(btn);
+      }
+    }
+
+    function renderOverview(project) {
+      const rows = project.sheets["개요"] || [];
+      if (!rows.length) {
+        overviewGrid.innerHTML = "개요 데이터가 없습니다.";
+        return;
+      }
+
+      const fields = [];
+      rows.forEach((row) => {
+        const entries = Object.entries(row).filter(([, v]) => v !== null && String(v).trim() !== "");
+        if (entries.length >= 2) {
+          const key = String(entries[0][1] ?? entries[0][0]).trim();
+          const value = String(entries[1][1] ?? "").trim();
+          if (key && value) {
+            fields.push({ key, value });
+          }
+        }
+      });
+
+      const dedup = [];
+      const seen = new Set();
+      for (const item of fields) {
+        const signature = `${item.key}::${item.value}`;
+        if (!seen.has(signature)) {
+          dedup.push(item);
+          seen.add(signature);
+        }
+      }
+
+      const finalItems = dedup.length ? dedup : [{ key: "안내", value: "개요 시트 형식을 확인해주세요." }];
+      const body = finalItems
+        .map((item) => `<tr><th>${item.key}</th><td>${item.value}</td></tr>`)
+        .join("");
+
+      overviewGrid.innerHTML = `<table class="overview-table"><tbody>${body}</tbody></table>`;
+    }
+
+    function toYmd(value) {
+      if (value === null || value === undefined || value === "") return "";
+
+      if (value instanceof Date && !Number.isNaN(value.getTime())) {
+        const yyyy = value.getFullYear();
+        const mm = String(value.getMonth() + 1).padStart(2, "0");
+        const dd = String(value.getDate()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+      }
+
+      if (typeof value === "number") {
+        const parsed = XLSX.SSF.parse_date_code(value);
+        if (parsed) {
+          const yyyy = String(parsed.y).padStart(4, "0");
+          const mm = String(parsed.m).padStart(2, "0");
+          const dd = String(parsed.d).padStart(2, "0");
+          return `${yyyy}-${mm}-${dd}`;
+        }
+      }
+
+      const text = String(value).trim();
+      if (!text) return "";
+
+      const normalized = text.replace(/\./g, "-").replace(/\//g, "-");
+      const exact = normalized.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+      if (exact) {
+        const yyyy = exact[1];
+        const mm = String(Number(exact[2])).padStart(2, "0");
+        const dd = String(Number(exact[3])).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+      }
+
+      const d = new Date(text);
+      if (!Number.isNaN(d.getTime())) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+      }
+
+      return text;
+    }
+
+    function parseNumericLike(value) {
+      if (typeof value === "number") return Number.isFinite(value) ? value : Number.NaN;
+      const text = String(value ?? "").replace(/,/g, "").trim();
+      if (!text) return Number.NaN;
+      const num = Number(text);
+      return Number.isFinite(num) ? num : Number.NaN;
+    }
+
+    function formatBudgetCell(column, value) {
+      if (value === null || value === undefined) return "";
+
+      if (column.includes("시작일") || column.includes("종료일")) {
+        return toYmd(value);
+      }
+
+      const num = parseNumericLike(value);
+      if (!Number.isNaN(num)) {
+        if (num === 0) return "";
+        if (Number.isInteger(num)) return num.toLocaleString("ko-KR");
+        return num.toLocaleString("ko-KR", { maximumFractionDigits: 4 });
+      }
+
+      const text = String(value);
+      return text.trim() === "0" ? "" : text;
+    }
+
+    function renderSheetTable(rows, targetWrap, sectionName = "") {
+      if (!rows.length) {
+        targetWrap.innerHTML = "데이터가 없습니다.";
+        return;
+      }
+
+      const columns = Object.keys(rows[0]);
+      const display = rows.slice(0, 120);
+      const formatter = sectionName === "사업비"
+        ? (col, val) => formatBudgetCell(col, val)
+        : (_col, val) => (val ?? "");
+
+      const thead = `<thead><tr>${columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`;
+      const tbody = `<tbody>${display
+        .map((row) => `<tr>${columns.map((c) => `<td>${formatter(c, row[c])}</td>`).join("")}</tr>`)
+        .join("")}</tbody>`;
+      targetWrap.innerHTML = `<table>${thead}${tbody}</table>`;
+    }
+
+    function renderDashboard() {
+      const project = getActiveProject();
+      if (!project) return;
+
+      renderOverview(project);
+      renderSheetTable(project.sheets["사업비"] || [], budgetTableWrap, "사업비");
+      renderSheetTable(project.sheets["마일스톤"] || [], milestoneTableWrap, "마일스톤");
+      renderSheetTable(project.sheets["정량지표"] || [], metricTableWrap, "정량지표");
+      renderSheetTable(project.sheets["정량지표상세"] || [], metricDetailTableWrap, "정량지표상세");
+    }
+
+    async function parseFiles(fileEntries) {
+      const projects = [];
+      for (const fileEntry of fileEntries) {
+        const name = fileEntry.name.replace(/\.[^.]+$/, "");
+        const data = await fileEntry.arrayBuffer();
+        const wb = XLSX.read(data, { type: "array" });
+        const sheets = {};
+        wb.SheetNames.forEach((sheetName) => {
+          sheets[sheetName] = sheetRows(wb, sheetName);
+        });
+        projects.push({ name, sheets });
+      }
+      return projects;
+    }
+
+    async function discoverProjectExcelPaths() {
+      const resp = await fetch("projects/");
+      if (!resp.ok) throw new Error("projects 폴더 접근 실패");
+
+      const html = await resp.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const anchors = Array.from(doc.querySelectorAll("a[href]"));
+      const paths = anchors
+        .map((a) => a.getAttribute("href") || "")
+        .filter((href) => href && !href.startsWith("?") && !href.startsWith("#"))
+        .map((href) => decodeURIComponent(href))
+        .filter((href) => !href.startsWith("../") && isExcelPath(href))
+        .map((href) => `projects/${href.replace(/^\.\//, "")}`);
+
+      return Array.from(new Set(paths));
+    }
+
+    async function loadFilesIntoDashboard(files, sourceLabel) {
+      state.projects = await parseFiles(files);
+      if (!state.projects.length) {
+        setMessage("불러온 엑셀 데이터가 없습니다.");
+        return;
+      }
+
+      if (!state.projects.some((p) => p.name === state.activeProject)) {
+        state.activeProject = state.projects[0].name;
+      }
+
+      renderProjectMenu();
+      renderDashboard();
+      setMessage(`${sourceLabel}에서 ${state.projects.length}개 과제를 불러왔습니다.`);
+    }
+
+    async function loadProjectFolder(silent = false) {
+      try {
+        const paths = await discoverProjectExcelPaths();
+        if (!paths.length) throw new Error("projects 폴더에서 엑셀 파일을 찾지 못했습니다.");
+
+        const files = [];
+        for (const path of paths) {
+          const resp = await fetch(path);
+          if (!resp.ok) throw new Error(`${path} 로딩 실패`);
+          const blob = await resp.blob();
+          files.push(new File([blob], path.split("/").pop(), { type: blob.type }));
+        }
+
+        await loadFilesIntoDashboard(files, "projects 폴더");
+      } catch (err) {
+        if (!silent) {
+          setMessage(`projects 자동 로딩 실패: ${err.message}`);
+        }
+      }
+    }
+
+    async function loadFromInput() {
+      if (!fileInput.files || !fileInput.files.length) {
+        setMessage("업로드할 엑셀 파일을 선택해주세요.");
+        return;
+      }
+      const files = Array.from(fileInput.files);
+      await loadFilesIntoDashboard(files, "업로드 파일");
+    }
+
+    async function checkReloadToken() {
+      try {
+        const resp = await fetch(`.watch/reload-token.json?t=${Date.now()}`, { cache: "no-store" });
+        if (!resp.ok) return;
+        const payload = await resp.json();
+        const token = String(payload.token || "");
+        if (!token) return;
+
+        if (!lastReloadToken) {
+          lastReloadToken = token;
+          return;
+        }
+
+        if (token !== lastReloadToken) {
+          location.reload();
+        }
+      } catch (_) {
+        // Watcher not running or token file not available.
+      }
+    }
+
+    function bindEvents() {
+      uploadBtn.addEventListener("click", () => fileInput.click());
+      fileInput.addEventListener("change", () => {
+        loadFromInput().catch((err) => setMessage(`파일 읽기 오류: ${err.message}`));
+      });
+
+      refreshBtn.addEventListener("click", () => {
+        loadProjectFolder(false).catch((err) => setMessage(`새로고침 오류: ${err.message}`));
+      });
+
+      reloadProjectBtn.addEventListener("click", () => {
+        loadProjectFolder(false).catch((err) => setMessage(`폴더 로딩 오류: ${err.message}`));
+      });
+    }
+
+    function init() {
+      baseDate.value = formatDateToday();
+      bindEvents();
+      checkReloadToken();
+      setInterval(checkReloadToken, 3000);
+      loadProjectFolder(true).catch(() => {
+        setMessage("자동 로딩에 실패했습니다. 왼쪽 메뉴에서 엑셀을 업로드해주세요.");
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
