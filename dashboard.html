@@ -247,6 +247,18 @@
       background: #f4f7fd;
     }
 
+    .sheet-table thead th {
+      text-align: center;
+    }
+
+    .sheet-table tbody td.num-cell {
+      text-align: right;
+    }
+
+    .sheet-table tbody td.txt-cell {
+      text-align: left;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -765,6 +777,23 @@
 
       const columns = Object.keys(rows[0]);
       const display = rows.slice(0, 120);
+      const alignedSections = new Set(["사업비", "마일스톤", "정량지표"]);
+      const useAlignmentRules = alignedSections.has(sectionName);
+
+      const numericCols = new Set();
+      if (useAlignmentRules) {
+        for (const col of columns) {
+          let valid = 0;
+          for (const row of display) {
+            const n = parseNumericLike(row[col]);
+            if (!Number.isNaN(n)) valid += 1;
+          }
+          if (valid >= Math.max(2, Math.floor(display.length * 0.4))) {
+            numericCols.add(col);
+          }
+        }
+      }
+
       const formatter = sectionName === "사업비"
         ? (col, val) => formatBudgetCell(col, val)
         : sectionName === "마일스톤"
@@ -777,9 +806,18 @@
           ? metricThead(columns)
           : `<thead><tr>${columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`;
       const tbody = `<tbody>${display
-        .map((row) => `<tr>${columns.map((c) => `<td>${formatter(c, row[c])}</td>`).join("")}</tr>`)
+        .map((row) => `<tr>${columns.map((c) => {
+          const cls = useAlignmentRules
+            ? (numericCols.has(c) ? "num-cell" : "txt-cell")
+            : "";
+          return `<td class="${cls}">${formatter(c, row[c])}</td>`;
+        }).join("")}</tr>`)
         .join("")}</tbody>`;
-      const tableClass = (sectionName === "마일스톤" || sectionName === "정량지표") ? "multi-head" : "";
+      const classList = ["sheet-table"];
+      if (sectionName === "마일스톤" || sectionName === "정량지표") {
+        classList.push("multi-head");
+      }
+      const tableClass = classList.join(" ");
       return `<table class="${tableClass}">${thead}${tbody}</table>`;
     }
 
