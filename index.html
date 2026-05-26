@@ -169,8 +169,30 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans
       <div class="sb-avatar">김</div>
       <div><div class="sb-uname">김동현</div><div class="sb-urole">연구책임자</div></div>
     </div>
-    <div class="sb-link"><i class="ti ti-refresh" style="font-size:13px"></i> 새로고침</div>
+    <div class="sb-link" onclick="openGithubModal()"><i class="ti ti-brand-github" style="font-size:13px"></i> GitHub 저장</div>
+    <div id="gh-status" style="font-size:11px;padding:4px 0;display:none"></div>
     <div class="sb-link"><i class="ti ti-logout" style="font-size:13px"></i> 로그아웃</div>
+  </div>
+
+  <!-- GitHub Modal -->
+  <div id="gh-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:12px;padding:28px;width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <i class="ti ti-brand-github" style="font-size:22px;color:#1a1a18"></i>
+        <span style="font-size:16px;font-weight:700">GitHub에 저장</span>
+      </div>
+      <div style="font-size:12px;color:#5a5a57;margin-bottom:6px">저장소</div>
+      <div style="font-size:13px;font-weight:500;background:#f7f7f5;border-radius:6px;padding:8px 12px;margin-bottom:16px;color:#1a1a18">neurophet-inyeong / RND-Dashboard</div>
+      <div style="font-size:12px;color:#5a5a57;margin-bottom:6px">GitHub Personal Access Token</div>
+      <input id="gh-token-input" type="password" placeholder="ghp_xxxxxxxxxxxx"
+        style="width:100%;padding:9px 12px;border:1px solid rgba(0,0,0,0.18);border-radius:8px;font-size:13px;margin-bottom:6px;outline:none;font-family:monospace">
+      <div style="font-size:11px;color:#9a9a96;margin-bottom:20px">토큰은 이 브라우저에만 저장되며 외부로 전송되지 않아요</div>
+      <div style="display:flex;gap:10px">
+        <button onclick="closeGithubModal()" style="flex:1;padding:10px;border:1px solid rgba(0,0,0,0.15);border-radius:8px;background:white;font-size:13px;cursor:pointer;color:#5a5a57">취소</button>
+        <button onclick="pushToGithub()" id="gh-push-btn" style="flex:2;padding:10px;border:none;border-radius:8px;background:#1D9E75;color:white;font-size:13px;font-weight:600;cursor:pointer">저장하기</button>
+      </div>
+      <div id="gh-modal-status" style="margin-top:12px;font-size:12px;text-align:center;min-height:18px"></div>
+    </div>
   </div>
 </aside>
 
@@ -968,6 +990,104 @@ function buildP2Charts() {
 }
 
 window.addEventListener('load', () => { /* charts init lazily on nav */ });
+
+// ──────────── GITHUB SYNC ────────────
+const GH_OWNER = 'neurophet-inyeong';
+const GH_REPO  = 'RND-Dashboard';
+const GH_FILE  = 'index.html';
+const GH_API   = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`;
+const TOKEN_KEY = 'rdmate_gh_token';
+
+function openGithubModal() {
+  const saved = sessionStorage.getItem(TOKEN_KEY) || '';
+  document.getElementById('gh-token-input').value = saved;
+  document.getElementById('gh-modal-status').textContent = '';
+  document.getElementById('gh-modal').style.display = 'flex';
+}
+
+function closeGithubModal() {
+  document.getElementById('gh-modal').style.display = 'none';
+}
+
+// close on backdrop click
+document.getElementById('gh-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeGithubModal();
+});
+
+async function pushToGithub() {
+  const token = document.getElementById('gh-token-input').value.trim();
+  if (!token) {
+    setModalStatus('⚠️ 토큰을 입력해 주세요', '#BA7517');
+    return;
+  }
+  sessionStorage.setItem(TOKEN_KEY, token);
+
+  const btn = document.getElementById('gh-push-btn');
+  btn.textContent = '저장 중...';
+  btn.disabled = true;
+  setModalStatus('', '');
+
+  try {
+    // 1. get current file SHA
+    const headers = {
+      'Authorization': `token ${token}`,
+      'Accept': 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    };
+
+    const getRes = await fetch(GH_API, { headers });
+    if (!getRes.ok && getRes.status !== 404) {
+      throw new Error(`파일 조회 실패 (${getRes.status})`);
+    }
+    const getData = getRes.ok ? await getRes.json() : null;
+    const sha = getData ? getData.sha : undefined;
+
+    // 2. get current page HTML
+    const content = document.documentElement.outerHTML;
+    const encoded = btoa(unescape(encodeURIComponent(content)));
+
+    // 3. push
+    const now = new Date().toLocaleString('ko-KR', {timeZone:'Asia/Seoul'});
+    const body = {
+      message: `RND Dashboard 업데이트 - ${now}`,
+      content: encoded,
+      ...(sha ? { sha } : {})
+    };
+
+    const putRes = await fetch(GH_API, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(body)
+    });
+
+    if (!putRes.ok) {
+      const err = await putRes.json();
+      throw new Error(err.message || `저장 실패 (${putRes.status})`);
+    }
+
+    setModalStatus('✅ 저장 완료! 1~2분 후 반영돼요', '#1D9E75');
+
+    // show status in sidebar too
+    const st = document.getElementById('gh-status');
+    st.style.display = 'block';
+    st.style.color = '#1D9E75';
+    st.textContent = '✅ ' + new Date().toLocaleTimeString('ko-KR') + ' 저장됨';
+
+    setTimeout(closeGithubModal, 2000);
+
+  } catch(e) {
+    setModalStatus('❌ ' + e.message, '#A32D2D');
+  } finally {
+    btn.textContent = '저장하기';
+    btn.disabled = false;
+  }
+}
+
+function setModalStatus(msg, color) {
+  const el = document.getElementById('gh-modal-status');
+  el.textContent = msg;
+  el.style.color = color;
+}
 </script>
 </body>
 </html>
