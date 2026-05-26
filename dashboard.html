@@ -205,6 +205,11 @@
       background: #fff;
     }
 
+    .table-wrap table.multi-head th {
+      position: static;
+      background: #f4f7fd;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -421,6 +426,53 @@
         });
     }
 
+    function makeUniqueHeaders(headers) {
+      const counter = new Map();
+      return headers.map((h, idx) => {
+        const base = normalizeKey(h) || `미지정_${idx + 1}`;
+        const n = (counter.get(base) || 0) + 1;
+        counter.set(base, n);
+        return n === 1 ? base : `${base}_${n}`;
+      });
+    }
+
+    function parseMilestoneRows(workbook, sheetName) {
+      const ws = workbook.Sheets[sheetName];
+      if (!ws) return [];
+
+      const matrix = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+      const groupRaw = (matrix[0] || []).map((v) => normalizeKey(v));
+      const subRaw = (matrix[1] || []).map((v, i) => normalizeKey(v) || `미지정_${i + 1}`);
+
+      const groups = [];
+      let carry = "";
+      for (const g of groupRaw) {
+        if (g) carry = g;
+        groups.push(carry);
+      }
+
+      const combined = subRaw.map((sub, i) => {
+        const grp = groups[i];
+        if (grp === "계획" || grp === "실행") {
+          return `${grp}|${sub}`;
+        }
+        return sub;
+      });
+
+      const header = makeUniqueHeaders(combined);
+      const body = matrix.slice(2);
+
+      return body
+        .filter((r) => Array.isArray(r) && r.some((v) => v !== null && String(v).trim() !== ""))
+        .map((r) => {
+          const out = {};
+          header.forEach((h, i) => {
+            out[h] = r[i] ?? null;
+          });
+          return out;
+        });
+    }
+
     function getActiveProject() {
       if (!state.projects.length) return null;
       if (!state.activeProject) return state.projects[0];
@@ -556,6 +608,46 @@
       return value ?? "";
     }
 
+    function milestoneThead(columns) {
+      const tokens = columns.map((col) => {
+        const parts = String(col).split("|");
+        if (parts.length >= 2 && (parts[0] === "계획" || parts[0] === "실행")) {
+          return { grouped: true, group: parts[0], label: parts.slice(1).join("|") };
+        }
+        return { grouped: false, group: "", label: col };
+      });
+
+      const hasGrouped = tokens.some((t) => t.grouped);
+      if (!hasGrouped) {
+        return `<thead><tr>${columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`;
+      }
+
+      let row1 = "";
+      let i = 0;
+      while (i < tokens.length) {
+        const t = tokens[i];
+        if (!t.grouped) {
+          row1 += `<th rowspan="2">${t.label}</th>`;
+          i += 1;
+          continue;
+        }
+
+        let span = 1;
+        while (i + span < tokens.length && tokens[i + span].grouped && tokens[i + span].group === t.group) {
+          span += 1;
+        }
+        row1 += `<th colspan="${span}">${t.group}</th>`;
+        i += span;
+      }
+
+      const row2 = tokens
+        .filter((t) => t.grouped)
+        .map((t) => `<th>${t.label}</th>`)
+        .join("");
+
+      return `<thead><tr>${row1}</tr><tr>${row2}</tr></thead>`;
+    }
+
     function renderSheetTable(rows, targetWrap, sectionName = "") {
       if (!rows.length) {
         targetWrap.innerHTML = "데이터가 없습니다.";
@@ -570,11 +662,14 @@
           ? (col, val) => formatMilestoneCell(col, val)
           : (_col, val) => (val ?? "");
 
-      const thead = `<thead><tr>${columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`;
+      const thead = sectionName === "마일스톤"
+        ? milestoneThead(columns)
+        : `<thead><tr>${columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`;
       const tbody = `<tbody>${display
         .map((row) => `<tr>${columns.map((c) => `<td>${formatter(c, row[c])}</td>`).join("")}</tr>`)
         .join("")}</tbody>`;
-      targetWrap.innerHTML = `<table>${thead}${tbody}</table>`;
+      const tableClass = sectionName === "마일스톤" ? "multi-head" : "";
+      targetWrap.innerHTML = `<table class="${tableClass}">${thead}${tbody}</table>`;
     }
 
     function renderDashboard() {
@@ -601,7 +696,7 @@
         const sheets = {};
         wb.SheetNames.forEach((sheetName) => {
           if (sheetName === "마일스톤") {
-            sheets[sheetName] = sheetRows(wb, sheetName, 2);
+            sheets[sheetName] = parseMilestoneRows(wb, sheetName);
           } else {
             sheets[sheetName] = sheetRows(wb, sheetName, 1);
           }
