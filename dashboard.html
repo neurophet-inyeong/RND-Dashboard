@@ -389,16 +389,36 @@
       return /\.(xlsx|xls|xlsm)$/i.test(path);
     }
 
-    function sheetRows(workbook, sheetName) {
+    function sheetRows(workbook, sheetName, headerRow = 1) {
       if (!workbook.Sheets[sheetName]) return [];
-      const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: null });
-      return rows.map((row) => {
-        const out = {};
-        for (const [k, v] of Object.entries(row)) {
-          out[normalizeKey(k) || "미지정"] = v;
-        }
-        return out;
-      });
+      const ws = workbook.Sheets[sheetName];
+
+      if (headerRow <= 1) {
+        const rows = XLSX.utils.sheet_to_json(ws, { defval: null });
+        return rows.map((row) => {
+          const out = {};
+          for (const [k, v] of Object.entries(row)) {
+            out[normalizeKey(k) || "미지정"] = v;
+          }
+          return out;
+        });
+      }
+
+      const matrix = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+      const headerIdx = Math.max(0, headerRow - 1);
+      const headerRaw = matrix[headerIdx] || [];
+      const header = headerRaw.map((h, i) => normalizeKey(h) || `미지정_${i + 1}`);
+      const body = matrix.slice(headerIdx + 1);
+
+      return body
+        .filter((r) => Array.isArray(r) && r.some((v) => v !== null && String(v).trim() !== ""))
+        .map((r) => {
+          const out = {};
+          header.forEach((h, i) => {
+            out[h] = r[i] ?? null;
+          });
+          return out;
+        });
     }
 
     function getActiveProject() {
@@ -528,6 +548,14 @@
       return text.trim() === "0" ? "" : text;
     }
 
+    function formatMilestoneCell(column, value) {
+      if (value === null || value === undefined) return "";
+      if (column.includes("시작일") || column.includes("종료일")) {
+        return toYmd(value);
+      }
+      return value ?? "";
+    }
+
     function renderSheetTable(rows, targetWrap, sectionName = "") {
       if (!rows.length) {
         targetWrap.innerHTML = "데이터가 없습니다.";
@@ -538,7 +566,9 @@
       const display = rows.slice(0, 120);
       const formatter = sectionName === "사업비"
         ? (col, val) => formatBudgetCell(col, val)
-        : (_col, val) => (val ?? "");
+        : sectionName === "마일스톤"
+          ? (col, val) => formatMilestoneCell(col, val)
+          : (_col, val) => (val ?? "");
 
       const thead = `<thead><tr>${columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`;
       const tbody = `<tbody>${display
@@ -570,7 +600,11 @@
         const wb = XLSX.read(data, { type: "array" });
         const sheets = {};
         wb.SheetNames.forEach((sheetName) => {
-          sheets[sheetName] = sheetRows(wb, sheetName);
+          if (sheetName === "마일스톤") {
+            sheets[sheetName] = sheetRows(wb, sheetName, 2);
+          } else {
+            sheets[sheetName] = sheetRows(wb, sheetName, 1);
+          }
         });
         projects.push({ name, sheets });
       }
