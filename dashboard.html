@@ -459,7 +459,76 @@
       overviewGrid.innerHTML = `<table class="overview-table"><tbody>${body}</tbody></table>`;
     }
 
-    function renderSheetTable(rows, targetWrap) {
+    function toYmd(value) {
+      if (value === null || value === undefined || value === "") return "";
+
+      if (value instanceof Date && !Number.isNaN(value.getTime())) {
+        const yyyy = value.getFullYear();
+        const mm = String(value.getMonth() + 1).padStart(2, "0");
+        const dd = String(value.getDate()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+      }
+
+      if (typeof value === "number") {
+        const parsed = XLSX.SSF.parse_date_code(value);
+        if (parsed) {
+          const yyyy = String(parsed.y).padStart(4, "0");
+          const mm = String(parsed.m).padStart(2, "0");
+          const dd = String(parsed.d).padStart(2, "0");
+          return `${yyyy}-${mm}-${dd}`;
+        }
+      }
+
+      const text = String(value).trim();
+      if (!text) return "";
+
+      const normalized = text.replace(/\./g, "-").replace(/\//g, "-");
+      const exact = normalized.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+      if (exact) {
+        const yyyy = exact[1];
+        const mm = String(Number(exact[2])).padStart(2, "0");
+        const dd = String(Number(exact[3])).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+      }
+
+      const d = new Date(text);
+      if (!Number.isNaN(d.getTime())) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+      }
+
+      return text;
+    }
+
+    function parseNumericLike(value) {
+      if (typeof value === "number") return Number.isFinite(value) ? value : Number.NaN;
+      const text = String(value ?? "").replace(/,/g, "").trim();
+      if (!text) return Number.NaN;
+      const num = Number(text);
+      return Number.isFinite(num) ? num : Number.NaN;
+    }
+
+    function formatBudgetCell(column, value) {
+      if (value === null || value === undefined) return "";
+
+      if (column.includes("시작일") || column.includes("종료일")) {
+        return toYmd(value);
+      }
+
+      const num = parseNumericLike(value);
+      if (!Number.isNaN(num)) {
+        if (num === 0) return "";
+        if (Number.isInteger(num)) return num.toLocaleString("ko-KR");
+        return num.toLocaleString("ko-KR", { maximumFractionDigits: 4 });
+      }
+
+      const text = String(value);
+      return text.trim() === "0" ? "" : text;
+    }
+
+    function renderSheetTable(rows, targetWrap, sectionName = "") {
       if (!rows.length) {
         targetWrap.innerHTML = "데이터가 없습니다.";
         return;
@@ -467,10 +536,13 @@
 
       const columns = Object.keys(rows[0]);
       const display = rows.slice(0, 120);
+      const formatter = sectionName === "사업비"
+        ? (col, val) => formatBudgetCell(col, val)
+        : (_col, val) => (val ?? "");
 
       const thead = `<thead><tr>${columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`;
       const tbody = `<tbody>${display
-        .map((row) => `<tr>${columns.map((c) => `<td>${row[c] ?? ""}</td>`).join("")}</tr>`)
+        .map((row) => `<tr>${columns.map((c) => `<td>${formatter(c, row[c])}</td>`).join("")}</tr>`)
         .join("")}</tbody>`;
       targetWrap.innerHTML = `<table>${thead}${tbody}</table>`;
     }
@@ -480,10 +552,10 @@
       if (!project) return;
 
       renderOverview(project);
-      renderSheetTable(project.sheets["사업비"] || [], budgetTableWrap);
-      renderSheetTable(project.sheets["마일스톤"] || [], milestoneTableWrap);
-      renderSheetTable(project.sheets["정량지표"] || [], metricTableWrap);
-      renderSheetTable(project.sheets["정량지표상세"] || [], metricDetailTableWrap);
+      renderSheetTable(project.sheets["사업비"] || [], budgetTableWrap, "사업비");
+      renderSheetTable(project.sheets["마일스톤"] || [], milestoneTableWrap, "마일스톤");
+      renderSheetTable(project.sheets["정량지표"] || [], metricTableWrap, "정량지표");
+      renderSheetTable(project.sheets["정량지표상세"] || [], metricDetailTableWrap, "정량지표상세");
     }
 
     async function parseFiles(fileEntries) {
