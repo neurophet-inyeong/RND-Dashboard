@@ -263,6 +263,28 @@
       text-align: center !important;
     }
 
+    .sheet-table thead th.metric-target,
+    .sheet-table tbody td.metric-target {
+      background: #eef4ff;
+    }
+
+    .sheet-table thead th.metric-achieve,
+    .sheet-table tbody td.metric-achieve {
+      background: #eefaf2;
+    }
+
+    .sheet-table tbody td.metric-rate {
+      font-weight: 700;
+    }
+
+    .sheet-table tbody td.metric-rate.status-ok {
+      color: #137a2c;
+    }
+
+    .sheet-table tbody td.metric-rate.status-miss {
+      color: #bf2f2f;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -762,13 +784,17 @@
         while (i + span < tokens.length && tokens[i + span].grouped && tokens[i + span].group === t.group) {
           span += 1;
         }
-        row1 += `<th colspan="${span}">${t.group}</th>`;
+        const groupCls = t.group === "목표" ? "metric-target" : "metric-achieve";
+        row1 += `<th colspan="${span}" class="${groupCls}">${t.group}</th>`;
         i += span;
       }
 
       const row2 = tokens
         .filter((t) => t.grouped)
-        .map((t) => `<th>${t.label}</th>`)
+        .map((t) => {
+          const groupCls = t.group === "목표" ? "metric-target" : "metric-achieve";
+          return `<th class="${groupCls}">${t.label}</th>`;
+        })
         .join("");
 
       return `<thead><tr>${row1}</tr><tr>${row2}</tr></thead>`;
@@ -809,7 +835,25 @@
             cls = "mid-cell";
           }
 
-          return `<td class="${cls}">${formatted}</td>`;
+          const clsList = [cls];
+          if (sectionName === "정량지표") {
+            if (c.startsWith("목표|")) {
+              clsList.push("metric-target");
+            } else if (c.startsWith("달성|")) {
+              clsList.push("metric-achieve");
+            }
+
+            if (c.includes("달성률")) {
+              clsList.push("metric-rate");
+              if (text.includes("달성") && !text.includes("미달성")) {
+                clsList.push("status-ok");
+              } else if (text.includes("미달성")) {
+                clsList.push("status-miss");
+              }
+            }
+          }
+
+          return `<td class="${clsList.join(" ")}">${formatted}</td>`;
         }).join("")}</tr>`)
         .join("")}</tbody>`;
       const classList = ["sheet-table"];
