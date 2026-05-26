@@ -781,22 +781,6 @@
 
       const columns = Object.keys(rows[0]);
       const display = rows.slice(0, 120);
-      const alignedSections = new Set(["사업비", "정량지표"]);
-      const useAlignmentRules = alignedSections.has(sectionName);
-
-      const numericCols = new Set();
-      if (useAlignmentRules) {
-        for (const col of columns) {
-          let valid = 0;
-          for (const row of display) {
-            const n = parseNumericLike(row[col]);
-            if (!Number.isNaN(n)) valid += 1;
-          }
-          if (valid >= Math.max(2, Math.floor(display.length * 0.4))) {
-            numericCols.add(col);
-          }
-        }
-      }
 
       const formatter = sectionName === "사업비"
         ? (col, val) => formatBudgetCell(col, val)
@@ -814,13 +798,15 @@
       const tbody = `<tbody>${display
         .map((row) => `<tr>${columns.map((c) => {
           const formatted = formatter(c, row[c]);
-          let cls = "";
+          const text = String(formatted ?? "").trim();
+          const rawNum = parseNumericLike(row[c]);
+          const formattedNum = parseNumericLike(formatted);
 
-          if (sectionName === "사업비" || sectionName === "마일스톤") {
-            const text = String(formatted ?? "").trim();
-            cls = commaNumberRe.test(text) ? "num-cell" : "mid-cell";
-          } else if (useAlignmentRules) {
-            cls = numericCols.has(c) ? "num-cell" : "txt-cell";
+          let cls = "txt-cell";
+          if (commaNumberRe.test(text)) {
+            cls = "num-cell";
+          } else if (!Number.isNaN(rawNum) || !Number.isNaN(formattedNum)) {
+            cls = "mid-cell";
           }
 
           return `<td class="${cls}">${formatted}</td>`;
