@@ -559,6 +559,10 @@
     }
 
     async function parseFiles(fileEntries) {
+      if (typeof XLSX === "undefined") {
+        throw new Error("XLSX 라이브러리를 불러오지 못했습니다. 네트워크/CDN 접근을 확인해주세요.");
+      }
+
       const projects = [];
       for (const fileEntry of fileEntries) {
         const name = fileEntry.name.replace(/\.[^.]+$/, "");
@@ -677,8 +681,12 @@
       bindEvents();
       checkReloadToken();
       setInterval(checkReloadToken, 3000);
-      loadProjectFolder(true).catch(() => {
-        setMessage("자동 로딩에 실패했습니다. 왼쪽 메뉴에서 엑셀을 업로드해주세요.");
+      if (location.protocol === "file:") {
+        setMessage("file:// 실행에서는 projects 자동 로딩이 제한됩니다. http://localhost:8080/dashboard.html 로 접속하거나 왼쪽에서 엑셀을 직접 업로드해주세요.");
+      }
+
+      loadProjectFolder(false).catch((err) => {
+        setMessage(`자동 로딩에 실패했습니다: ${err.message}`);
       });
     }
 
