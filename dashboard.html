@@ -190,6 +190,31 @@
       gap: 12px;
     }
 
+    .subtabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .subtab-btn {
+      border: 1px solid #cfd7e6;
+      background: #f7f9ff;
+      color: #2e4164;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .subtab-btn.active {
+      background: linear-gradient(135deg, #5570ff, #435ad0);
+      border-color: #435ad0;
+      color: #fff;
+      box-shadow: 0 6px 14px rgba(67, 90, 208, 0.25);
+    }
+
     .card-title {
       margin: 0 0 8px;
       font-weight: 800;
@@ -318,27 +343,10 @@
 
       <section class="sheet-stack">
         <article class="card">
-          <h2 class="card-title">사업비</h2>
-          <p class="hint">사업비 시트 상위 120행</p>
-          <div id="budgetTableWrap" class="table-wrap"></div>
-        </article>
-
-        <article class="card">
-          <h2 class="card-title">마일스톤</h2>
-          <p class="hint">마일스톤 시트 상위 120행</p>
-          <div id="milestoneTableWrap" class="table-wrap"></div>
-        </article>
-
-        <article class="card">
-          <h2 class="card-title">정량지표</h2>
-          <p class="hint">정량지표 시트 상위 120행</p>
-          <div id="metricTableWrap" class="table-wrap"></div>
-        </article>
-
-        <article class="card">
-          <h2 class="card-title">정량지표상세</h2>
-          <p class="hint">정량지표상세 시트 상위 120행</p>
-          <div id="metricDetailTableWrap" class="table-wrap"></div>
+          <h2 class="card-title">시트 상세</h2>
+          <div id="sheetTabs" class="subtabs"></div>
+          <p id="sheetHint" class="hint"></p>
+          <div id="activeSheetWrap" class="table-wrap"></div>
         </article>
       </section>
     </main>
@@ -347,7 +355,8 @@
   <script>
     const state = {
       projects: [],
-      activeProject: ""
+      activeProject: "",
+      activeSheetTab: "사업비"
     };
     let lastReloadToken = "";
 
@@ -360,10 +369,16 @@
     const baseDate = document.getElementById("baseDate");
 
     const overviewGrid = document.getElementById("overviewGrid");
-    const budgetTableWrap = document.getElementById("budgetTableWrap");
-    const milestoneTableWrap = document.getElementById("milestoneTableWrap");
-    const metricTableWrap = document.getElementById("metricTableWrap");
-    const metricDetailTableWrap = document.getElementById("metricDetailTableWrap");
+    const sheetTabs = document.getElementById("sheetTabs");
+    const sheetHint = document.getElementById("sheetHint");
+    const activeSheetWrap = document.getElementById("activeSheetWrap");
+
+    const SHEET_TABS = [
+      { key: "사업비", label: "사업비", hint: "사업비 시트 상위 120행" },
+      { key: "마일스톤", label: "마일스톤", hint: "마일스톤 시트 상위 120행" },
+      { key: "정량지표", label: "정량지표", hint: "정량지표 시트 상위 120행" },
+      { key: "정량지표상세", label: "정량지표상세", hint: "정량지표상세 시트 상위 120행" }
+    ];
 
     function setMessage(text) {
       if (!text) {
@@ -672,15 +687,42 @@
       targetWrap.innerHTML = `<table class="${tableClass}">${thead}${tbody}</table>`;
     }
 
+    function renderSheetTabs(project) {
+      sheetTabs.innerHTML = "";
+
+      if (!SHEET_TABS.some((t) => t.key === state.activeSheetTab)) {
+        state.activeSheetTab = "사업비";
+      }
+
+      for (const tab of SHEET_TABS) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `subtab-btn${tab.key === state.activeSheetTab ? " active" : ""}`;
+        const count = (project.sheets[tab.key] || []).length;
+        btn.textContent = `${tab.label} (${count})`;
+        btn.addEventListener("click", () => {
+          state.activeSheetTab = tab.key;
+          renderSheetTabs(project);
+          renderActiveSheet(project);
+        });
+        sheetTabs.appendChild(btn);
+      }
+    }
+
+    function renderActiveSheet(project) {
+      const tab = SHEET_TABS.find((t) => t.key === state.activeSheetTab) || SHEET_TABS[0];
+      const rows = project.sheets[tab.key] || [];
+      sheetHint.textContent = tab.hint;
+      renderSheetTable(rows, activeSheetWrap, tab.key);
+    }
+
     function renderDashboard() {
       const project = getActiveProject();
       if (!project) return;
 
       renderOverview(project);
-      renderSheetTable(project.sheets["사업비"] || [], budgetTableWrap, "사업비");
-      renderSheetTable(project.sheets["마일스톤"] || [], milestoneTableWrap, "마일스톤");
-      renderSheetTable(project.sheets["정량지표"] || [], metricTableWrap, "정량지표");
-      renderSheetTable(project.sheets["정량지표상세"] || [], metricDetailTableWrap, "정량지표상세");
+      renderSheetTabs(project);
+      renderActiveSheet(project);
     }
 
     async function parseFiles(fileEntries) {
