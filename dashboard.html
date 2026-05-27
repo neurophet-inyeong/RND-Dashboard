@@ -273,6 +273,10 @@
       background: #eefaf2;
     }
 
+    .sheet-table thead th.metric-rate-head {
+      background: #fff4e8;
+    }
+
     .sheet-table tbody td.metric-rate {
       font-weight: 700;
     }
@@ -798,7 +802,11 @@
         while (i + span < tokens.length && tokens[i + span].grouped && tokens[i + span].group === t.group) {
           span += 1;
         }
-        const groupCls = t.group === "목표" ? "metric-target" : "metric-achieve";
+        const groupCls = t.group === "목표"
+          ? "metric-target"
+          : t.group === "달성"
+            ? "metric-achieve"
+            : "metric-rate-head";
         row1 += `<th colspan="${span}" class="${groupCls}">${t.group}</th>`;
         i += span;
       }
@@ -806,7 +814,11 @@
       const row2 = tokens
         .filter((t) => t.grouped)
         .map((t) => {
-          const groupCls = t.group === "목표" ? "metric-target" : "metric-achieve";
+          const groupCls = t.group === "목표"
+            ? "metric-target"
+            : t.group === "달성"
+              ? "metric-achieve"
+              : "metric-rate-head";
           return `<th class="${groupCls}">${t.label}</th>`;
         })
         .join("");
