@@ -570,7 +570,7 @@
       const header = makeUniqueHeaders(combined);
       const body = matrix.slice(2);
 
-      return body
+      const parsedRows = body
         .filter((r) => Array.isArray(r) && r.some((v) => v !== null && String(v).trim() !== ""))
         .map((r) => {
           const out = {};
@@ -579,6 +579,35 @@
           });
           return out;
         });
+
+      const rateCols = header.filter((h) => h.includes("연구개발 달성률"));
+      if (!rateCols.length) {
+        return parsedRows;
+      }
+
+      const mergedKey = "연구개발달성률";
+      const firstIdx = header.findIndex((h) => rateCols.includes(h));
+      const baseHeaders = header.filter((h) => !rateCols.includes(h));
+      const finalHeaders = [...baseHeaders];
+      finalHeaders.splice(Math.max(0, firstIdx), 0, mergedKey);
+
+      return parsedRows.map((row) => {
+        const merged = rateCols
+          .map((col) => row[col])
+          .filter((v) => v !== null && String(v).trim() !== "")
+          .map((v) => String(v).trim())
+          .join(" / ");
+
+        const out = {};
+        finalHeaders.forEach((h) => {
+          if (h === mergedKey) {
+            out[h] = merged;
+          } else {
+            out[h] = row[h] ?? null;
+          }
+        });
+        return out;
+      });
     }
 
     function getActiveProject() {
