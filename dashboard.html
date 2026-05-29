@@ -332,6 +332,36 @@
       display: none;
     }
 
+    .metric-main-wrap {
+      max-height: 310px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      border: 1px solid #dce3ef;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .metric-main-wrap table {
+      min-width: 0 !important;
+      width: 100% !important;
+      table-layout: fixed !important;
+    }
+
+    .metric-main-wrap th,
+    .metric-main-wrap td {
+      white-space: normal !important;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .metric-detail-wrap {
+      max-height: 310px;
+      overflow: auto;
+      border: 1px solid #dce3ef;
+      border-radius: 10px;
+      background: #fff;
+    }
+
     @media (max-width: 1200px) {
     }
 
@@ -407,6 +437,23 @@
   </div>
 
   <script>
+    if (location.protocol === 'file:') {
+      fetch('http://localhost:8080/', {
+        method: 'HEAD',
+        mode: 'no-cors',
+        cache: 'no-store',
+        signal: AbortSignal.timeout(1500)
+      })
+      .then(() => location.replace('http://localhost:8080/dashboard.html'))
+      .catch(() => {
+        const msg = document.getElementById('message');
+        msg.style.display = 'block';
+        msg.innerHTML =
+          '<b>install-autostart.bat</b> 을 한 번 실행하면 이후 이 파일을 더블클릭할 때마다 자동으로 열립니다. ' +
+          '현재는 왼쪽 <b>엑셀 직접 업로드</b>로 데이터를 확인할 수 있습니다.';
+      });
+    }
+
     const state = {
       projects: [],
       activeProject: "",
@@ -923,21 +970,29 @@
         const metricRows = project.sheets["정량지표"] || [];
         const metricDetailRows = project.sheets["정량지표상세"] || [];
 
+        activeSheetWrap.style.cssText =
+          "overflow:hidden;max-height:none;border:none;border-radius:0;background:transparent;";
+
         activeSheetWrap.innerHTML = `
           <div class="merged-sheet">
             <div>
               <div class="merged-title">정량지표</div>
-              ${buildSheetTableHtml(metricRows, "정량지표")}
+              <div class="metric-main-wrap">
+                ${buildSheetTableHtml(metricRows, "정량지표")}
+              </div>
             </div>
             <div>
               <div class="merged-title">정량지표상세</div>
-              ${buildSheetTableHtml(metricDetailRows, "정량지표상세")}
+              <div class="metric-detail-wrap">
+                ${buildSheetTableHtml(metricDetailRows, "정량지표상세")}
+              </div>
             </div>
           </div>
         `;
         return;
       }
 
+      activeSheetWrap.removeAttribute("style");
       const rows = project.sheets[tab.key] || [];
       renderSheetTable(rows, activeSheetWrap, tab.key);
     }
