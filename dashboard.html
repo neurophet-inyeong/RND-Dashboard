@@ -698,7 +698,10 @@
 
       const finalItems = dedup.length ? dedup : [{ key: "안내", value: "개요 시트 형식을 확인해주세요." }];
       const body = finalItems
-        .map((item) => `<tr><th>${item.key}</th><td>${item.value}</td></tr>`)
+        .map((item) => {
+          const val = item.key === "공고일" ? toYmd(item.value) || item.value : item.value;
+          return `<tr><th>${item.key}</th><td>${val}</td></tr>`;
+        })
         .join("");
 
       overviewGrid.innerHTML = `<table class="overview-table"><tbody>${body}</tbody></table>`;
