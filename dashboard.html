@@ -835,7 +835,29 @@
       return isNaN(d.getTime()) ? null : d;
     }
 
-    function buildMilestoneGanttHtml(rows) {
+    // 사업비 시트에서 단계-연차별 기간 추출 (A=단계-연차, B=시작일, C=종료일)
+    function parseBudgetYears(budgetRows) {
+      if (!budgetRows.length) return [];
+      const columns = Object.keys(budgetRows[0]);
+      const labelCol = columns.find(c => /단계.*연차|연차.*단계|단계|연차/.test(c)) || columns[0];
+      const startCol = columns.find(c => /시작일/.test(c)) || columns[1];
+      const endCol   = columns.find(c => /종료일/.test(c)) || columns[2];
+
+      const seen = new Set();
+      const years = [];
+      for (const row of budgetRows) {
+        const label = String(row[labelCol] ?? "").trim();
+        if (!label || seen.has(label)) continue;
+        const start = parseToDate(row[startCol]);
+        const end   = parseToDate(row[endCol]);
+        if (!start || !end || end < start) continue;
+        seen.add(label);
+        years.push({ label, start, end });
+      }
+      return years;
+    }
+
+    function buildMilestoneGanttHtml(rows, budgetRows) {
       if (!rows.length) return "<p>데이터가 없습니다.</p>";
 
       const columns = Object.keys(rows[0]);
@@ -847,18 +869,72 @@
       const actEnd    = columns.find(c => c.startsWith("실행|") && /종료/.test(c));
       const hasActual = !!(actStart && actEnd);
 
-      const groups = new Map();
-      for (const row of rows) {
-        const yr = yearCol ? String(row[yearCol] ?? "").trim() : "전체";
-        if (!yr) continue;
-        if (!groups.has(yr)) groups.set(yr, []);
-        groups.get(yr).push(row);
-      }
+      const dateFmt = (d) => d
+        ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`
+        : "";
 
-      const dateFmt = (d) => {
-        if (!d) return "";
-        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-      };
+      // 사업비에서 연차별 기간 정의 가져오기
+      const budgetYears = parseBudgetYears(budgetRows || []);
+
+      // groups: [{ label, start, end, rows[] }]
+      let groups;
+
+      if (budgetYears.length) {
+        // 사업비 연차 기준으로 그룹 구성 (순서 유지)
+        groups = budgetYears.map(by => ({ label: by.label, start: by.start, end: by.end, rows: [] }));
+
+        for (const row of rows) {
+          const ps = parseToDate(planStart ? row[planStart] : null);
+          const pe = parseToDate(planEnd   ? row[planEnd]   : null);
+
+          if (ps && pe) {
+            // 날짜가 겹치는 모든 연차에 추가
+            let placed = false;
+            for (const grp of groups) {
+              if (ps <= grp.end && pe >= grp.start) {
+                grp.rows.push(row);
+                placed = true;
+              }
+            }
+            // 겹치는 연차가 없으면 연차 컬럼 기준 fallback
+            if (!placed && yearCol) {
+              const yr = String(row[yearCol] ?? "").trim();
+              const g = groups.find(g => g.label === yr);
+              if (g) g.rows.push(row);
+            }
+          } else {
+            // 날짜 없는 경우 연차 컬럼으로 배치
+            const yr = yearCol ? String(row[yearCol] ?? "").trim() : "";
+            const g = groups.find(g => g.label === yr);
+            if (g) g.rows.push(row);
+          }
+        }
+      } else {
+        // fallback: 마일스톤의 연차 컬럼으로 그룹화, 날짜 범위는 해당 연차 데이터에서 계산
+        const map = new Map();
+        for (const row of rows) {
+          const yr = yearCol ? String(row[yearCol] ?? "").trim() : "전체";
+          if (!yr) continue;
+          if (!map.has(yr)) map.set(yr, { label: yr, start: null, end: null, rows: [] });
+          map.get(yr).rows.push(row);
+        }
+        for (const grp of map.values()) {
+          for (const row of grp.rows) {
+            for (const col of [planStart, planEnd, actStart, actEnd]) {
+              if (!col) continue;
+              const d = parseToDate(row[col]);
+              if (!d) continue;
+              if (!grp.start || d < grp.start) grp.start = d;
+              if (!grp.end   || d > grp.end)   grp.end   = d;
+            }
+          }
+          if (grp.start) {
+            grp.start = new Date(grp.start.getFullYear(), grp.start.getMonth(), 1);
+            grp.end   = new Date(grp.end.getFullYear(), grp.end.getMonth() + 1, 0);
+          }
+        }
+        groups = [...map.values()];
+      }
 
       const legend = `<div class="gantt-legend">
         <div class="gantt-legend-item"><div class="gantt-legend-dot plan"></div><span>계획</span></div>
@@ -867,27 +943,16 @@
 
       const parts = [legend];
 
-      for (const [yr, yrRows] of groups) {
-        let rStart = null, rEnd = null;
-        for (const row of yrRows) {
-          for (const col of [planStart, planEnd, actStart, actEnd]) {
-            if (!col) continue;
-            const d = parseToDate(row[col]);
-            if (!d) continue;
-            if (!rStart || d < rStart) rStart = d;
-            if (!rEnd   || d > rEnd)   rEnd   = d;
-          }
-        }
-        if (!rStart) continue;
+      for (const grp of groups) {
+        if (!grp.rows.length || !grp.start || !grp.end) continue;
 
-        rStart = new Date(rStart.getFullYear(), rStart.getMonth(), 1);
-        rEnd   = new Date(rEnd.getFullYear(),   rEnd.getMonth() + 1, 0);
+        const rStart  = grp.start;
+        const rEnd    = grp.end;
         const totalMs = rEnd - rStart;
-
-        const pct = (d) => Math.max(0, Math.min(100, (d - rStart) / totalMs * 100));
+        const pct     = (d) => Math.max(0, Math.min(100, (d - rStart) / totalMs * 100));
 
         const months = [];
-        let cur = new Date(rStart);
+        let cur = new Date(rStart.getFullYear(), rStart.getMonth(), 1);
         while (cur <= rEnd) {
           months.push({ label: `${cur.getMonth()+1}월`, left: pct(cur).toFixed(2) });
           cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
@@ -896,17 +961,21 @@
         const monthLines  = months.map(m => `<div class="gantt-month-line" style="left:${m.left}%"></div>`).join("");
         const monthLabels = months.map(m => `<div class="gantt-month-label" style="left:${m.left}%">${m.label}</div>`).join("");
 
-        const tbody = yrRows.map(row => {
+        const tbody = grp.rows.map(row => {
           const name = nameCol ? String(row[nameCol] ?? "").trim() : "";
           const ps = parseToDate(planStart ? row[planStart] : null);
           const pe = parseToDate(planEnd   ? row[planEnd]   : null);
           const as = parseToDate(actStart  ? row[actStart]  : null);
           const ae = parseToDate(actEnd    ? row[actEnd]    : null);
 
+          // 해당 연차 범위 안에서 클램핑
           const makeBar = (s, e, cls) => {
             if (!s || !e || e < s) return "";
-            const l = pct(s).toFixed(2);
-            const w = Math.max(0.3, pct(e) - pct(s)).toFixed(2);
+            const cs = new Date(Math.max(s.getTime(), rStart.getTime()));
+            const ce = new Date(Math.min(e.getTime(), rEnd.getTime()));
+            if (ce < cs) return "";
+            const l = pct(cs).toFixed(2);
+            const w = Math.max(0.3, pct(ce) - pct(cs)).toFixed(2);
             return `<div class="gantt-bar ${cls}" style="left:${l}%;width:${w}%" title="${dateFmt(s)} ~ ${dateFmt(e)}"></div>`;
           };
 
@@ -919,7 +988,7 @@
         }).join("");
 
         parts.push(`<div class="gantt-year-block">
-          <div class="gantt-year-title">${yr}</div>
+          <div class="gantt-year-title">${grp.label} <span style="font-weight:500;font-size:0.85rem;color:#6a7b99;">(${dateFmt(rStart)} ~ ${dateFmt(rEnd)})</span></div>
           <table class="gantt-table">
             <thead><tr>
               <th class="gantt-name-col-head">마일스톤</th>
