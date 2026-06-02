@@ -630,7 +630,7 @@
     }
 
     // 개요+사업비가 합쳐진 시트를 감지하여 분리
-    // 사업비 헤더 = 단계-연차(연차) 컬럼 AND 시작일/종료일 컬럼이 같은 행에 존재
+    // 사업비 헤더 = 단계-연차 계열 셀 AND 시작일 셀 AND 종료일 셀이 같은 행에 존재
     function parseCombinedSheet(workbook, sheetName) {
       const ws = workbook.Sheets[sheetName];
       if (!ws) return null;
@@ -641,8 +641,11 @@
       let budgetHeaderIdx = -1;
       for (let i = 1; i < matrix.length; i++) {
         const texts = (matrix[i] || []).map(v => normalizeKey(v));
-        const joined = texts.join(" ");
-        if (/시작일|종료일/.test(joined) && texts.some(t => /단계.{0,5}연차|연차/.test(t))) {
+        // 단계-연차, 시작일, 종료일 세 키워드가 동시에 같은 행에 있어야 사업비 헤더로 인정
+        const hasYearCol  = texts.some(t => /단계.{0,5}연차|단계-연차/.test(t));
+        const hasStartCol = texts.some(t => t === "시작일" || /^시작일$/.test(t));
+        const hasEndCol   = texts.some(t => t === "종료일" || /^종료일$/.test(t));
+        if (hasYearCol && hasStartCol && hasEndCol) {
           budgetHeaderIdx = i;
           break;
         }
