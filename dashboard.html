@@ -1249,9 +1249,10 @@
 
       if (tab.key === "마일스톤") {
         const rows = project.sheets["마일스톤"] || [];
+        const budgetRows = project.sheets["사업비"] || [];
         activeSheetWrap.style.cssText =
           "overflow:visible;max-height:none;border:none;border-radius:0;background:transparent;";
-        activeSheetWrap.innerHTML = buildMilestoneGanttHtml(rows);
+        activeSheetWrap.innerHTML = buildMilestoneGanttHtml(rows, budgetRows);
         return;
       }
 
