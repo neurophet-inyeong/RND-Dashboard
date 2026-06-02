@@ -302,8 +302,9 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 700px;
+      min-width: 0;
       font-size: 0.9rem;
+      table-layout: fixed;
     }
 
     th,
@@ -312,6 +313,8 @@
       border-bottom: 1px solid #ecf0f7;
       padding: 8px 10px;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     th {
