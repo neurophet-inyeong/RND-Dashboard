@@ -449,6 +449,21 @@
     }
     .gantt-plan { top: 5px; height: 10px; background: #4a66ff; opacity: 0.85; }
     .gantt-actual { top: 18px; height: 9px; background: #27ae6f; opacity: 0.85; }
+    .gantt-today-month-bg {
+      position: absolute; top: 0; bottom: 0;
+      background: rgba(255, 160, 0, 0.10); z-index: 0; pointer-events: none;
+    }
+    .gantt-today-line {
+      position: absolute; top: 0; bottom: 0; width: 2px;
+      background: #ff6b00; opacity: 0.75; z-index: 3; pointer-events: none;
+    }
+    .gantt-month-label.is-today {
+      color: #d95000; font-weight: 800;
+    }
+    .gantt-month-header-today-bg {
+      position: absolute; top: 0; bottom: 0;
+      background: rgba(255, 160, 0, 0.13); border-radius: 3px; pointer-events: none;
+    }
   </style>
 </head>
 <body>
