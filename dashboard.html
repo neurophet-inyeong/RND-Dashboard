@@ -704,12 +704,17 @@
       }
 
       const finalItems = dedup.length ? dedup : [{ key: "안내", value: "개요 시트 형식을 확인해주세요." }];
-      const body = finalItems
-        .map((item) => {
-          const val = item.key === "공고일" ? toYmd(item.rawValue) || item.value : item.value;
-          return `<tr><th>${item.key}</th><td>${val}</td></tr>`;
-        })
-        .join("");
+      const fmtVal = (item) => item.key === "공고일" ? toYmd(item.rawValue) || item.value : item.value;
+      const body = [];
+      for (let i = 0; i < finalItems.length; i += 2) {
+        const a = finalItems[i];
+        const b = finalItems[i + 1];
+        if (b) {
+          body.push(`<tr><th>${a.key}</th><td>${fmtVal(a)}</td><th>${b.key}</th><td>${fmtVal(b)}</td></tr>`);
+        } else {
+          body.push(`<tr><th>${a.key}</th><td colspan="3">${fmtVal(a)}</td></tr>`);
+        }
+      }
 
       overviewGrid.innerHTML = `<table class="overview-table"><tbody>${body}</tbody></table>`;
     }
