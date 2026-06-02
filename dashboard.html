@@ -1186,16 +1186,14 @@
         return { grouped: false, group: "", label: col };
       });
 
-      // 넓은 텍스트 컬럼(지표명·항목·구분 등) vs 좁은 숫자 컬럼 분류
+      // 넓은 텍스트 컬럼 vs 좁은 숫자 컬럼 — px 기준으로 지정
       const widePattern = /지표|항목|내용|명칭?|구분|연차|번호|단계|과제/;
-      const wideCount    = tokens.filter(t => !t.grouped && widePattern.test(t.label)).length || 1;
-      const narrowCount  = tokens.length - wideCount;
-      const wideW   = Math.min(22, Math.floor(45 / wideCount));
-      const narrowW = narrowCount > 0 ? Math.floor((100 - wideW * wideCount) / narrowCount) : 0;
+      const WIDE_PX   = 130; // 텍스트 컬럼 고정 너비
+      const NARROW_PX = 52;  // 숫자 컬럼 고정 너비
 
       const colgroup = `<colgroup>${tokens.map(t => {
         const isWide = !t.grouped && widePattern.test(t.label);
-        return `<col style="width:${isWide ? wideW : narrowW}%">`;
+        return `<col style="width:${isWide ? WIDE_PX : NARROW_PX}px">`;
       }).join("")}</colgroup>`;
 
       const hasGrouped = tokens.some((t) => t.grouped);
