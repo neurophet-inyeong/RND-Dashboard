@@ -614,6 +614,52 @@
       });
     }
 
+    // raw matrix(첫 행=헤더) → row 객체 배열
+    function parseMatrixToRows(matrix) {
+      if (matrix.length < 2) return [];
+      const header = makeUniqueHeaders(
+        (matrix[0] || []).map((h, i) => normalizeKey(h) || `미지정_${i + 1}`)
+      );
+      return matrix.slice(1)
+        .filter(r => r.some(v => v !== null && String(v).trim() !== ""))
+        .map(r => {
+          const out = {};
+          header.forEach((h, i) => { out[h] = r[i] ?? null; });
+          return out;
+        });
+    }
+
+    // 개요+사업비가 합쳐진 시트를 감지하여 분리
+    // 사업비 헤더 = 단계-연차(연차) 컬럼 AND 시작일/종료일 컬럼이 같은 행에 존재
+    function parseCombinedSheet(workbook, sheetName) {
+      const ws = workbook.Sheets[sheetName];
+      if (!ws) return null;
+
+      const matrix = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+      if (matrix.length < 3) return null;
+
+      let budgetHeaderIdx = -1;
+      for (let i = 1; i < matrix.length; i++) {
+        const texts = (matrix[i] || []).map(v => normalizeKey(v));
+        const joined = texts.join(" ");
+        if (/시작일|종료일/.test(joined) && texts.some(t => /단계.{0,5}연차|연차/.test(t))) {
+          budgetHeaderIdx = i;
+          break;
+        }
+      }
+
+      if (budgetHeaderIdx <= 0) return null; // 합쳐진 시트 아님
+
+      const nonEmpty = r => r.some(v => v !== null && String(v).trim() !== "");
+      const overviewMatrix = matrix.slice(0, budgetHeaderIdx).filter(nonEmpty);
+      const budgetMatrix   = matrix.slice(budgetHeaderIdx).filter(nonEmpty);
+
+      return {
+        overviewRows: parseMatrixToRows(overviewMatrix),
+        budgetRows:   parseMatrixToRows(budgetMatrix),
+      };
+    }
+
     function parseMilestoneRows(workbook, sheetName) {
       const ws = workbook.Sheets[sheetName];
       if (!ws) return [];
