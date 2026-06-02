@@ -1338,12 +1338,17 @@
           } else {
             const combined = parseCombinedSheet(wb, sheetName);
             if (combined) {
-              // 개요 패널용 virtual key (아직 없을 때만)
+              // 개요 패널용 virtual key — 아직 없을 때만 설정
               if (!sheets["개요"]) sheets["개요"] = combined.overviewRows;
-              // 사업비(간트 기간 참조)용 virtual key (아직 없을 때만)
+              // 사업비(간트 기간 참조)용 virtual key — 아직 없을 때만 설정
               if (!sheets["사업비"]) sheets["사업비"] = combined.budgetRows;
-              // 원래 시트명은 사업비 부분으로 저장 (탭 테이블용)
-              sheets[sheetName] = combined.budgetRows;
+              // 원래 시트명으로는 사업비(budget) 부분만 저장 (탭 테이블용)
+              // 단, sheetName이 "개요"인 경우 "개요" 키를 덮어쓰지 않도록 주의
+              if (sheetName !== "개요") {
+                sheets[sheetName] = combined.budgetRows;
+              }
+              // sheetName === "개요"인 경우: sheets["개요"]는 overviewRows,
+              // sheets["사업비"]는 budgetRows 로 이미 올바르게 설정됨
             } else {
               sheets[sheetName] = sheetRows(wb, sheetName, 1);
             }
