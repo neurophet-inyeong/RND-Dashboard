@@ -1333,7 +1333,17 @@
           } else if (sheetName === "정량지표") {
             sheets[sheetName] = parseMetricRows(wb, sheetName);
           } else {
-            sheets[sheetName] = sheetRows(wb, sheetName, 1);
+            const combined = parseCombinedSheet(wb, sheetName);
+            if (combined) {
+              // 개요 패널용 virtual key (아직 없을 때만)
+              if (!sheets["개요"]) sheets["개요"] = combined.overviewRows;
+              // 사업비(간트 기간 참조)용 virtual key (아직 없을 때만)
+              if (!sheets["사업비"]) sheets["사업비"] = combined.budgetRows;
+              // 원래 시트명은 사업비 부분으로 저장 (탭 테이블용)
+              sheets[sheetName] = combined.budgetRows;
+            } else {
+              sheets[sheetName] = sheetRows(wb, sheetName, 1);
+            }
           }
         });
         projects.push({ name, sheets });
