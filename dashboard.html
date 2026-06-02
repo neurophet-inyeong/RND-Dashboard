@@ -819,6 +819,120 @@
       return text;
     }
 
+    function parseToDate(value) {
+      if (value === null || value === undefined || value === "") return null;
+      if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
+      if (typeof value === "number") {
+        const parsed = XLSX.SSF.parse_date_code(value);
+        if (parsed) return new Date(parsed.y, parsed.m - 1, parsed.d);
+      }
+      const text = String(value).trim();
+      if (!text) return null;
+      const normalized = text.replace(/\./g, "-").replace(/\//g, "-");
+      const exact = normalized.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+      if (exact) return new Date(Number(exact[1]), Number(exact[2]) - 1, Number(exact[3]));
+      const d = new Date(text);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function buildMilestoneGanttHtml(rows) {
+      if (!rows.length) return "<p>데이터가 없습니다.</p>";
+
+      const columns = Object.keys(rows[0]);
+      const yearCol   = columns.find(c => /연차|차수|연도|년차/.test(c));
+      const nameCol   = columns.find(c => /마일스톤|세부내용|내용|명칭|항목/.test(c)) || columns[1];
+      const planStart = columns.find(c => c.startsWith("계획|") && /시작/.test(c));
+      const planEnd   = columns.find(c => c.startsWith("계획|") && /종료/.test(c));
+      const actStart  = columns.find(c => c.startsWith("실행|") && /시작/.test(c));
+      const actEnd    = columns.find(c => c.startsWith("실행|") && /종료/.test(c));
+      const hasActual = !!(actStart && actEnd);
+
+      const groups = new Map();
+      for (const row of rows) {
+        const yr = yearCol ? String(row[yearCol] ?? "").trim() : "전체";
+        if (!yr) continue;
+        if (!groups.has(yr)) groups.set(yr, []);
+        groups.get(yr).push(row);
+      }
+
+      const dateFmt = (d) => {
+        if (!d) return "";
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+      };
+
+      const legend = `<div class="gantt-legend">
+        <div class="gantt-legend-item"><div class="gantt-legend-dot plan"></div><span>계획</span></div>
+        ${hasActual ? '<div class="gantt-legend-item"><div class="gantt-legend-dot actual"></div><span>실행</span></div>' : ""}
+      </div>`;
+
+      const parts = [legend];
+
+      for (const [yr, yrRows] of groups) {
+        let rStart = null, rEnd = null;
+        for (const row of yrRows) {
+          for (const col of [planStart, planEnd, actStart, actEnd]) {
+            if (!col) continue;
+            const d = parseToDate(row[col]);
+            if (!d) continue;
+            if (!rStart || d < rStart) rStart = d;
+            if (!rEnd   || d > rEnd)   rEnd   = d;
+          }
+        }
+        if (!rStart) continue;
+
+        rStart = new Date(rStart.getFullYear(), rStart.getMonth(), 1);
+        rEnd   = new Date(rEnd.getFullYear(),   rEnd.getMonth() + 1, 0);
+        const totalMs = rEnd - rStart;
+
+        const pct = (d) => Math.max(0, Math.min(100, (d - rStart) / totalMs * 100));
+
+        const months = [];
+        let cur = new Date(rStart);
+        while (cur <= rEnd) {
+          months.push({ label: `${cur.getMonth()+1}월`, left: pct(cur).toFixed(2) });
+          cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+        }
+
+        const monthLines  = months.map(m => `<div class="gantt-month-line" style="left:${m.left}%"></div>`).join("");
+        const monthLabels = months.map(m => `<div class="gantt-month-label" style="left:${m.left}%">${m.label}</div>`).join("");
+
+        const tbody = yrRows.map(row => {
+          const name = nameCol ? String(row[nameCol] ?? "").trim() : "";
+          const ps = parseToDate(planStart ? row[planStart] : null);
+          const pe = parseToDate(planEnd   ? row[planEnd]   : null);
+          const as = parseToDate(actStart  ? row[actStart]  : null);
+          const ae = parseToDate(actEnd    ? row[actEnd]    : null);
+
+          const makeBar = (s, e, cls) => {
+            if (!s || !e || e < s) return "";
+            const l = pct(s).toFixed(2);
+            const w = Math.max(0.3, pct(e) - pct(s)).toFixed(2);
+            return `<div class="gantt-bar ${cls}" style="left:${l}%;width:${w}%" title="${dateFmt(s)} ~ ${dateFmt(e)}"></div>`;
+          };
+
+          return `<tr>
+            <td class="gantt-name-cell">${name}</td>
+            <td class="gantt-bar-cell">
+              <div class="gantt-bar-track">${monthLines}${makeBar(ps,pe,"gantt-plan")}${makeBar(as,ae,"gantt-actual")}</div>
+            </td>
+          </tr>`;
+        }).join("");
+
+        parts.push(`<div class="gantt-year-block">
+          <div class="gantt-year-title">${yr}</div>
+          <table class="gantt-table">
+            <thead><tr>
+              <th class="gantt-name-col-head">마일스톤</th>
+              <th class="gantt-month-header-cell"><div class="gantt-month-header">${monthLabels}</div></th>
+            </tr></thead>
+            <tbody>${tbody}</tbody>
+          </table>
+        </div>`);
+      }
+
+      return `<div class="gantt-wrap">${parts.join("")}</div>`;
+    }
+
     function parseNumericLike(value) {
       if (typeof value === "number") return Number.isFinite(value) ? value : Number.NaN;
       const text = String(value ?? "").replace(/,/g, "").trim();
