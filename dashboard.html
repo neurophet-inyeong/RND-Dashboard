@@ -1074,7 +1074,7 @@
           return `<tr>
             <td class="gantt-name-cell">${name}</td>
             <td class="gantt-bar-cell">
-              <div class="gantt-bar-track">${monthLines}${makeBar(ps,pe,"gantt-plan")}${makeBar(as,ae,"gantt-actual")}</div>
+              <div class="gantt-bar-track">${todayMonthBg}${monthLines}${makeBar(ps,pe,"gantt-plan")}${makeBar(as,ae,"gantt-actual")}${todayLine}</div>
             </td>
           </tr>`;
         }).join("");
