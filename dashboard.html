@@ -1304,9 +1304,7 @@
         classList.push("multi-head");
       }
       const tableClass = classList.join(" ");
-      // 정량지표는 colgroup px 너비 기준으로 width: auto (컨테이너 100% 강제 해제)
-      const tableStyle = sectionName === "정량지표" ? ' style="width:auto;"' : "";
-      return `<table class="${tableClass}"${tableStyle}>${thead}${tbody}</table>`;
+      return `<table class="${tableClass}">${thead}${tbody}</table>`;
     }
 
     function renderSheetTable(rows, targetWrap, sectionName = "") {
