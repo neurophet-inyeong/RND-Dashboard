@@ -395,6 +395,60 @@
         width: 130px;
       }
     }
+
+    /* Gantt Chart */
+    .gantt-wrap { overflow-x: auto; padding-bottom: 4px; }
+    .gantt-legend {
+      display: flex; gap: 16px; margin-bottom: 14px;
+      font-size: 0.84rem; color: #4a5878;
+    }
+    .gantt-legend-item { display: flex; align-items: center; gap: 6px; }
+    .gantt-legend-dot { width: 22px; height: 9px; border-radius: 3px; }
+    .gantt-legend-dot.plan { background: #4a66ff; }
+    .gantt-legend-dot.actual { background: #27ae6f; }
+    .gantt-year-block { margin-bottom: 28px; }
+    .gantt-year-title {
+      font-weight: 800; font-size: 0.95rem; color: #2f3f5e;
+      margin-bottom: 8px; padding-bottom: 6px;
+      border-bottom: 2px solid #d0d8ea;
+    }
+    .gantt-table {
+      width: 100%; border-collapse: collapse;
+      table-layout: fixed; min-width: 540px !important; font-size: 0.88rem;
+    }
+    .gantt-table thead th {
+      background: #f4f7fd; color: #3a4f74; font-weight: 700;
+      border-bottom: 1px solid #dce3ef;
+      position: sticky; top: 0; z-index: 1;
+      padding: 0; white-space: nowrap;
+    }
+    .gantt-table tbody td { border-bottom: 1px solid #ecf0f7; padding: 0; }
+    .gantt-name-col-head {
+      width: 200px; padding: 8px 10px !important;
+      text-align: left; border-right: 1px solid #dce3ef;
+    }
+    .gantt-name-cell {
+      width: 200px; padding: 6px 10px; vertical-align: middle;
+      white-space: normal !important; word-break: break-word;
+      border-right: 1px solid #dce3ef; color: #23395f; font-size: 0.88rem;
+    }
+    .gantt-month-header-cell { padding: 0 !important; }
+    .gantt-month-header { position: relative; height: 28px; }
+    .gantt-month-label {
+      position: absolute; font-size: 0.75rem; color: #5f7090;
+      font-weight: 600; top: 50%; transform: translateY(-50%);
+      padding-left: 4px; white-space: nowrap;
+    }
+    .gantt-bar-cell { padding: 4px 0 !important; vertical-align: middle; }
+    .gantt-bar-track { position: relative; height: 32px; background: #f8f9fc; }
+    .gantt-month-line {
+      position: absolute; top: 0; bottom: 0; width: 1px; background: #dce3ef;
+    }
+    .gantt-bar {
+      position: absolute; border-radius: 4px; min-width: 3px; cursor: default;
+    }
+    .gantt-plan { top: 5px; height: 10px; background: #4a66ff; opacity: 0.85; }
+    .gantt-actual { top: 18px; height: 9px; background: #27ae6f; opacity: 0.85; }
   </style>
 </head>
 <body>
