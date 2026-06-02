@@ -1179,9 +1179,21 @@
         return { grouped: false, group: "", label: col };
       });
 
+      // 넓은 텍스트 컬럼(지표명·항목·구분 등) vs 좁은 숫자 컬럼 분류
+      const widePattern = /지표|항목|내용|명칭?|구분|연차|번호|단계|과제/;
+      const wideCount    = tokens.filter(t => !t.grouped && widePattern.test(t.label)).length || 1;
+      const narrowCount  = tokens.length - wideCount;
+      const wideW   = Math.min(22, Math.floor(45 / wideCount));
+      const narrowW = narrowCount > 0 ? Math.floor((100 - wideW * wideCount) / narrowCount) : 0;
+
+      const colgroup = `<colgroup>${tokens.map(t => {
+        const isWide = !t.grouped && widePattern.test(t.label);
+        return `<col style="width:${isWide ? wideW : narrowW}%">`;
+      }).join("")}</colgroup>`;
+
       const hasGrouped = tokens.some((t) => t.grouped);
       if (!hasGrouped) {
-        return `<thead><tr>${columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`;
+        return colgroup + `<thead><tr>${columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`;
       }
 
       let row1 = "";
@@ -1219,7 +1231,7 @@
         })
         .join("");
 
-      return `<thead><tr>${row1}</tr><tr>${row2}</tr></thead>`;
+      return colgroup + `<thead><tr>${row1}</tr><tr>${row2}</tr></thead>`;
     }
 
     function buildSheetTableHtml(rows, sectionName = "") {
