@@ -1015,15 +1015,43 @@
         const totalMs = rEnd - rStart;
         const pct     = (d) => Math.max(0, Math.min(100, (d - rStart) / totalMs * 100));
 
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayInRange = today >= rStart && today <= rEnd;
+        const todayPct = todayInRange ? pct(today).toFixed(2) : null;
+
         const months = [];
         let cur = new Date(rStart.getFullYear(), rStart.getMonth(), 1);
         while (cur <= rEnd) {
-          months.push({ label: `${cur.getMonth()+1}월`, left: pct(cur).toFixed(2) });
-          cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+          const nextMonth = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+          const isToday = todayInRange
+            && today >= cur && today < nextMonth;
+          months.push({
+            label: `${cur.getMonth()+1}월`,
+            left: pct(cur).toFixed(2),
+            right: pct(new Date(Math.min(nextMonth, rEnd))).toFixed(2),
+            isToday,
+          });
+          cur = nextMonth;
         }
 
+        // 현재 월 배경 (헤더용 + 바 트랙용)
+        const todayMonth = months.find(m => m.isToday);
+        const todayMonthBg = todayMonth
+          ? `<div class="gantt-today-month-bg" style="left:${todayMonth.left}%;width:${(todayMonth.right - todayMonth.left).toFixed(2)}%"></div>`
+          : "";
+        const todayHeaderBg = todayMonth
+          ? `<div class="gantt-month-header-today-bg" style="left:${todayMonth.left}%;width:${(todayMonth.right - todayMonth.left).toFixed(2)}%"></div>`
+          : "";
+        // 오늘 날짜 세로선
+        const todayLine = todayPct !== null
+          ? `<div class="gantt-today-line" style="left:${todayPct}%"></div>`
+          : "";
+
         const monthLines  = months.map(m => `<div class="gantt-month-line" style="left:${m.left}%"></div>`).join("");
-        const monthLabels = months.map(m => `<div class="gantt-month-label" style="left:${m.left}%">${m.label}</div>`).join("");
+        const monthLabels = months.map(m =>
+          `<div class="gantt-month-label${m.isToday ? " is-today" : ""}" style="left:${m.left}%">${m.label}</div>`
+        ).join("");
 
         const tbody = grp.rows.map(row => {
           const name = nameCol ? String(row[nameCol] ?? "").trim() : "";
