@@ -344,7 +344,7 @@
     .metric-main-wrap {
       max-height: 310px;
       overflow-y: auto;
-      overflow-x: hidden;
+      overflow-x: auto;
       border: 1px solid #dce3ef;
       border-radius: 10px;
       background: #fff;
@@ -352,17 +352,24 @@
 
     .metric-main-wrap table {
       min-width: 0 !important;
+      max-width: 100%;
       width: 100% !important;
       table-layout: fixed !important;
-      font-size: 0.80rem !important;
+      font-size: 0.75rem !important;
     }
 
-    .metric-main-wrap th,
+    .metric-main-wrap th {
+      white-space: nowrap !important;
+      padding: 5px 4px !important;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .metric-main-wrap td {
-      white-space: normal !important;
-      word-break: break-word;
-      overflow-wrap: break-word;
-      padding: 5px 5px !important;
+      white-space: nowrap !important;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 4px 4px !important;
     }
 
     .metric-detail-wrap {
