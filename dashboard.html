@@ -1186,15 +1186,19 @@
         return { grouped: false, group: "", label: col };
       });
 
-      // 넓은 텍스트 컬럼 vs 좁은 숫자 컬럼 — px 기준으로 지정
+      // 텍스트 컬럼은 넓게, 숫자 컬럼은 좁게 — 합계가 정확히 100%가 되도록 계산
       const widePattern = /지표|항목|내용|명칭?|구분|연차|번호|단계|과제/;
-      const WIDE_PX   = 130; // 텍스트 컬럼 고정 너비
-      const NARROW_PX = 52;  // 숫자 컬럼 고정 너비
+      const isWideCol   = (t) => !t.grouped && widePattern.test(t.label);
+      const wideCount   = tokens.filter(isWideCol).length || 1;
+      const narrowCount = tokens.length - wideCount;
+      const wideW       = Math.min(18, Math.floor(40 / wideCount));
+      const narrowW     = narrowCount > 0
+        ? ((100 - wideW * wideCount) / narrowCount)
+        : 0;
 
-      const colgroup = `<colgroup>${tokens.map(t => {
-        const isWide = !t.grouped && widePattern.test(t.label);
-        return `<col style="width:${isWide ? WIDE_PX : NARROW_PX}px">`;
-      }).join("")}</colgroup>`;
+      const colgroup = `<colgroup>${tokens.map(t =>
+        `<col style="width:${isWideCol(t) ? wideW.toFixed(1) : narrowW.toFixed(2)}%">`
+      ).join("")}</colgroup>`;
 
       const hasGrouped = tokens.some((t) => t.grouped);
       if (!hasGrouped) {
