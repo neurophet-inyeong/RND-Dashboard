@@ -1024,6 +1024,7 @@
       const legend = `<div class="gantt-legend">
         <div class="gantt-legend-item"><div class="gantt-legend-dot plan"></div><span>계획</span></div>
         ${hasActual ? '<div class="gantt-legend-item"><div class="gantt-legend-dot actual"></div><span>실행</span></div>' : ""}
+        ${hasActual ? '<div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:transparent;border:2px dashed #27ae6f;border-right:none;height:9px;width:22px;border-radius:0"></div><span>실행중(종료일 미입력)</span></div>' : ""}
       </div>`;
 
       const parts = [legend];
