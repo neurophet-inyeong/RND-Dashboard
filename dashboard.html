@@ -603,6 +603,8 @@
     }
 
     function isExcelPath(path) {
+      const filename = path.split("/").pop() || path;
+      if (filename.startsWith("~$")) return false; // Excel 임시 잠금 파일 제외
       return /\.(xlsx|xls|xlsm)$/i.test(path);
     }
 
