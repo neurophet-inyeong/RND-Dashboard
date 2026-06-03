@@ -1100,7 +1100,9 @@
             ? makeBar(as, today, "gantt-actual-ongoing")
             : makeBar(as, ae, "gantt-actual");
 
-          const planBar = makeBar(ps, pe, "gantt-plan");
+          // 계획 기간이 오늘을 포함하면 강조 (실행 데이터 없어도 현재 진행 예정 표시)
+          const planInProgress = ps && pe && today >= ps && today <= pe && !actBar;
+          const planBar = makeBar(ps, pe, planInProgress ? "gantt-plan gantt-plan-current" : "gantt-plan");
 
           // 두 바 모두 없으면 행 자체를 생략
           if (!planBar && !actBar) return null;
