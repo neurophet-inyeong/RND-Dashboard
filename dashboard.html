@@ -462,13 +462,7 @@
       position: absolute; border-radius: 4px; min-width: 3px; cursor: default;
     }
     .gantt-plan { top: 5px; height: 10px; background: #4a66ff; opacity: 0.85; }
-    .gantt-plan-current { outline: 2px solid #4a66ff; outline-offset: 1px; opacity: 1 !important; }
     .gantt-actual { top: 18px; height: 9px; background: #27ae6f; opacity: 0.85; }
-    .gantt-actual-ongoing {
-      top: 18px; height: 9px; opacity: 0.9;
-      background: linear-gradient(to right, #27ae6f 60%, rgba(39,174,111,0.15));
-      border-right: 2px dashed #27ae6f;
-    }
     .gantt-today-month-bg {
       position: absolute; top: 0; bottom: 0;
       background: rgba(255, 160, 0, 0.10); z-index: 0; pointer-events: none;
@@ -604,8 +598,6 @@
     }
 
     function isExcelPath(path) {
-      const filename = path.split("/").pop() || path;
-      if (filename.startsWith("~$")) return false; // Excel 임시 잠금 파일 제외
       return /\.(xlsx|xls|xlsm)$/i.test(path);
     }
 
@@ -1025,7 +1017,6 @@
       const legend = `<div class="gantt-legend">
         <div class="gantt-legend-item"><div class="gantt-legend-dot plan"></div><span>계획</span></div>
         ${hasActual ? '<div class="gantt-legend-item"><div class="gantt-legend-dot actual"></div><span>실행</span></div>' : ""}
-        ${hasActual ? '<div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:linear-gradient(to right,#27ae6f,rgba(39,174,111,0.15));border-right:2px dashed #27ae6f"></div><span>진행중</span></div>' : ""}
       </div>`;
 
       const parts = [legend];
@@ -1083,37 +1074,24 @@
           const as = parseToDate(actStart  ? row[actStart]  : null);
           const ae = parseToDate(actEnd    ? row[actEnd]    : null);
 
-          // 연차 범위 내 클램핑. 과제기간 이전에 끝나는 바는 표시 안 함
+          // 해당 연차 범위 안에서 클램핑
           const makeBar = (s, e, cls) => {
             if (!s || !e || e < s) return "";
-            if (e < rStart) return ""; // 과제기간 이전 → 표시 안 함
             const cs = new Date(Math.max(s.getTime(), rStart.getTime()));
             const ce = new Date(Math.min(e.getTime(), rEnd.getTime()));
-            if (ce <= cs) return "";
+            if (ce < cs) return "";
             const l = pct(cs).toFixed(2);
             const w = Math.max(0.3, pct(ce) - pct(cs)).toFixed(2);
             return `<div class="gantt-bar ${cls}" style="left:${l}%;width:${w}%" title="${dateFmt(s)} ~ ${dateFmt(e)}"></div>`;
           };
 
-          // 실행 시작은 있고 종료일 없음 → 오늘까지 진행중 바
-          const actBar = (as && !ae)
-            ? makeBar(as, today, "gantt-actual-ongoing")
-            : makeBar(as, ae, "gantt-actual");
-
-          // 계획 기간이 오늘을 포함하면 강조 (실행 데이터 없어도 현재 진행 예정 표시)
-          const planInProgress = ps && pe && today >= ps && today <= pe && !actBar;
-          const planBar = makeBar(ps, pe, planInProgress ? "gantt-plan gantt-plan-current" : "gantt-plan");
-
-          // 두 바 모두 없으면 행 자체를 생략
-          if (!planBar && !actBar) return null;
-
           return `<tr>
             <td class="gantt-name-cell">${name}</td>
             <td class="gantt-bar-cell">
-              <div class="gantt-bar-track">${todayMonthBg}${monthLines}${planBar}${actBar}${todayLine}</div>
+              <div class="gantt-bar-track">${todayMonthBg}${monthLines}${makeBar(ps,pe,"gantt-plan")}${makeBar(as,ae,"gantt-actual")}${todayLine}</div>
             </td>
           </tr>`;
-        }).filter(Boolean).join("");
+        }).join("");
 
         parts.push(`<div class="gantt-year-block">
           <div class="gantt-year-title">${grp.label} <span style="font-weight:500;font-size:0.85rem;color:#6a7b99;">(${dateFmt(rStart)} ~ ${dateFmt(rEnd)})</span></div>
