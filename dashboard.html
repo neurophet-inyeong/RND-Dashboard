@@ -1102,10 +1102,11 @@
             : (as && !ae)
               ? (() => {
                   const cs = new Date(Math.max(as.getTime(), rStart.getTime()));
-                  if (cs >= rEnd) return "";
+                  const ce = new Date(Math.min(today.getTime(), rEnd.getTime()));
+                  if (ce <= cs) return "";
                   const l = pct(cs).toFixed(2);
-                  const w = Math.max(1, pct(rEnd) - pct(cs)).toFixed(2);
-                  return `<div class="gantt-bar gantt-actual-open" style="left:${l}%;width:${w}%" title="${dateFmt(as)} ~ (진행중)"></div>`;
+                  const w = Math.max(0.3, pct(ce) - pct(cs)).toFixed(2);
+                  return `<div class="gantt-bar gantt-actual-open" style="left:${l}%;width:${w}%" title="${dateFmt(as)} ~ 오늘(${dateFmt(today)})"></div>`;
                 })()
               : "";
 
