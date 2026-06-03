@@ -1080,16 +1080,27 @@
           const as = parseToDate(actStart  ? row[actStart]  : null);
           const ae = parseToDate(actEnd    ? row[actEnd]    : null);
 
-          // 해당 연차 범위 안에서 클램핑
+          // 연차 범위 내 클램핑. 과제기간 이전에 끝나는 바는 표시 안 함
           const makeBar = (s, e, cls) => {
             if (!s || !e || e < s) return "";
+            if (e < rStart) return ""; // 과제기간 이전 → 표시 안 함
             const cs = new Date(Math.max(s.getTime(), rStart.getTime()));
             const ce = new Date(Math.min(e.getTime(), rEnd.getTime()));
-            if (ce < cs) return "";
+            if (ce <= cs) return "";
             const l = pct(cs).toFixed(2);
             const w = Math.max(0.3, pct(ce) - pct(cs)).toFixed(2);
             return `<div class="gantt-bar ${cls}" style="left:${l}%;width:${w}%" title="${dateFmt(s)} ~ ${dateFmt(e)}"></div>`;
           };
+
+          // 실행 시작은 있고 종료일 없음 → 오늘까지 진행중 바
+          const actBar = (as && !ae)
+            ? makeBar(as, today, "gantt-actual-ongoing")
+            : makeBar(as, ae, "gantt-actual");
+
+          const planBar = makeBar(ps, pe, "gantt-plan");
+
+          // 두 바 모두 없으면 행 자체를 생략
+          if (!planBar && !actBar) return null;
 
           return `<tr>
             <td class="gantt-name-cell">${name}</td>
