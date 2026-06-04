@@ -1438,11 +1438,14 @@
             for (let c = range.s.c; c <= range.e.c; c++) {
               const addr = XLSX.utils.encode_cell({ r, c });
               const cell = ws[addr];
-              if (cell && cell.t === 'd' && typeof cell.v === 'string') {
-                const d = new Date(cell.v);
-                if (!isNaN(d.getTime())) {
-                  cell.v = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-                  cell.t = 'n';
+              if (cell && cell.t === 'd') {
+                console.log("[D-CELL]", sn, addr, "v:", cell.v, "type:", typeof cell.v);
+                if (typeof cell.v === 'string') {
+                  const d = new Date(cell.v);
+                  if (!isNaN(d.getTime())) {
+                    cell.v = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                    cell.t = 'n';
+                  }
                 }
               }
             }
