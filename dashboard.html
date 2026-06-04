@@ -1434,7 +1434,7 @@
       for (const fileEntry of fileEntries) {
         const name = fileEntry.name.replace(/\.[^.]+$/, "");
         const data = await fileEntry.arrayBuffer();
-        const wb = XLSX.read(data, { type: "array" });
+        const wb = XLSX.read(data, { type: "array", cellDates: true });
         const sheets = {};
         wb.SheetNames.forEach((sheetName) => {
           if (sheetName === "마일스톤") {
