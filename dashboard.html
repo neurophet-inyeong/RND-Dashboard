@@ -1454,6 +1454,10 @@
         const sheets = {};
         wb.SheetNames.forEach((sheetName) => {
           if (sheetName === "마일스톤") {
+            // 마일스톤 F3 셀 직접 확인 (실행|시작일 첫 데이터 행)
+            const wsMil = wb.Sheets[sheetName];
+            const f3 = wsMil && wsMil['F3'];
+            console.log("[WS-F3]", sheetName, "F3:", f3, "| !ref:", wsMil && wsMil['!ref']);
             sheets[sheetName] = parseMilestoneRows(wb, sheetName);
           } else if (sheetName === "정량지표") {
             sheets[sheetName] = parseMetricRows(wb, sheetName);
