@@ -1072,9 +1072,10 @@
           : "";
 
         const monthLines  = months.map(m => `<div class="gantt-month-line" style="left:${m.left}%"></div>`).join("");
-        const monthLabels = months.map(m =>
-          `<div class="gantt-month-label${m.isToday ? " is-today" : ""}" style="left:${m.left}%">${m.label}</div>`
-        ).join("");
+        const monthLabels = months.map(m => {
+          const center = ((parseFloat(m.left) + parseFloat(m.right)) / 2).toFixed(2);
+          return `<div class="gantt-month-label${m.isToday ? " is-today" : ""}" style="left:${center}%">${m.label}</div>`;
+        }).join("");
 
         const tbody = grp.rows.map(row => {
           const name = nameCol ? String(row[nameCol] ?? "").trim() : "";
