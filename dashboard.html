@@ -1475,17 +1475,21 @@
           // t="d" 셀 추출 → 워크시트에 추가
           const re = /<c\b([^>]*)t="d"([^>]*)>([\s\S]*?)<\/c>/g;
           let m;
+          let patchCount = 0;
           while ((m = re.exec(xml)) !== null) {
             const attrs = m[1] + m[2];
             const inner = m[3];
             const ref   = (attrs.match(/\br="([A-Z]+\d+)"/) || [])[1];
             const iso   = (inner.match(/<v>([^<]+)<\/v>/) || [])[1];
+            console.log("[PATCH-CELL]", sname, ref, iso, "exists?", !!ws[ref]);
             if (!ref || !iso || ws[ref]) continue;
             const d = new Date(iso);
             if (isNaN(d.getTime())) continue;
             const local = new Date(d.getFullYear(), d.getMonth(), d.getDate());
             ws[ref] = { t: 'n', v: toSerial(local) };
+            patchCount++;
           }
+          if (patchCount > 0) console.log("[PATCH]", sname, patchCount, "cells patched");
         }
       } catch (e) {
         console.warn('patchIsoDateCells:', e);
