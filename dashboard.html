@@ -1609,7 +1609,7 @@
 
         const files = [];
         for (const path of paths) {
-          const resp = await fetch(path);
+          const resp = await fetch(path, { cache: "no-store" });
           if (!resp.ok) throw new Error(`${path} 로딩 실패`);
           const blob = await resp.blob();
           files.push(new File([blob], path.split("/").pop(), { type: blob.type }));
