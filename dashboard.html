@@ -1098,6 +1098,9 @@
           const planBar = (ps && ps < rStart) ? "" : makeBar(ps, pe, "gantt-plan");
 
           // 규칙 3·4: 실행 종료일 있으면 실선 바, 시작일만 있으면 점선 바
+          if (name && name.includes("학습 데이터")) {
+            console.log("[D3]", "raw:", row[actStart], row[actEnd], "| as:", as, "ae:", ae);
+          }
           const actBar = (as && ae)
             ? makeBar(as, ae, "gantt-actual")
             : (as && !ae)
