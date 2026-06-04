@@ -1443,10 +1443,12 @@
         const EPOCH = new Date(1899, 11, 30).getTime();
         const toSerial = d => (d.getTime() - EPOCH) / 86400000;
 
+        console.log("[PATCH-ENTRIES]", entries.map(e => e.fname));
         for (const entry of entries) {
           // 시트 인덱스 → 시트명 매핑 (sheet1.xml → SheetNames[0])
           const idx = parseInt(entry.fname.match(/sheet(\d+)\.xml/)[1]) - 1;
           const sname = wb.SheetNames[idx];
+          console.log("[PATCH-SHEET]", entry.fname, "→", sname);
           if (!sname) continue;
           const ws = wb.Sheets[sname];
           if (!ws) continue;
