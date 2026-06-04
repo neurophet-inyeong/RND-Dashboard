@@ -1444,7 +1444,6 @@
               const lhFnLen = u8[lhOff+26]|u8[lhOff+27]<<8;
               const lhExLen = u8[lhOff+28]|u8[lhOff+29]<<8;
               const dStart  = lhOff + 30 + lhFnLen + lhExLen;
-              console.log("[CD]", fname, "lhOff:", lhOff, "lhFnLen:", lhFnLen, "lhExLen:", lhExLen, "dStart:", dStart, "csize:", csize);
               entryMap.set(fname, { fname, method, data: u8.subarray(dStart, dStart + csize) });
             }
             pos += 46 + fnLen + exLen + cmLen;
