@@ -1094,8 +1094,8 @@
             return `<div class="gantt-bar ${cls}" style="left:${l}%;width:${w}%" title="${dateFmt(s)} ~ ${dateFmt(e)}"></div>`;
           };
 
-          // 규칙 2: 계획 시작일이 사업기간(rStart)보다 이전이면 표시 안 함
-          const planBar = (ps && ps < rStart) ? "" : makeBar(ps, pe, "gantt-plan");
+          // 규칙 2: 계획 종료일이 사업기간 이전이면 표시 안 함 (시작일만 이전이면 rStart부터 표시)
+          const planBar = makeBar(ps, pe, "gantt-plan");
 
           // 규칙 3·4: 실행 종료일 있으면 실선 바, 시작일만 있으면 점선 바
           const actBar = (as && ae)
