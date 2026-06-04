@@ -1433,7 +1433,26 @@
       for (const fileEntry of fileEntries) {
         const name = fileEntry.name.replace(/\.[^.]+$/, "");
         const data = await fileEntry.arrayBuffer();
-        const wb = XLSX.read(data, { type: "array", cellDates: true });
+        const wb = XLSX.read(data, { type: "array" });
+        // t:'d' 타입 셀(ISO 날짜 문자열) → Date 객체로 변환 (XLSX.js가 처리 못하는 타입)
+        wb.SheetNames.forEach(sn => {
+          const ws = wb.Sheets[sn];
+          if (!ws || !ws['!ref']) return;
+          const range = XLSX.utils.decode_range(ws['!ref']);
+          for (let r = range.s.r; r <= range.e.r; r++) {
+            for (let c = range.s.c; c <= range.e.c; c++) {
+              const addr = XLSX.utils.encode_cell({ r, c });
+              const cell = ws[addr];
+              if (cell && cell.t === 'd' && typeof cell.v === 'string') {
+                const d = new Date(cell.v);
+                if (!isNaN(d.getTime())) {
+                  cell.v = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                  cell.t = 'n';
+                }
+              }
+            }
+          }
+        });
         const sheets = {};
         wb.SheetNames.forEach((sheetName) => {
           if (sheetName === "마일스톤") {
