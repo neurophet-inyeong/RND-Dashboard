@@ -1416,6 +1416,82 @@
       renderActiveSheet(project);
     }
 
+    // XLSX.js가 버린 t='d'(ISO 날짜) 셀을 ZIP→XML 직접 파싱으로 복원
+    async function patchIsoDateCells(wb, arrayBuffer) {
+      try {
+        const u8 = new Uint8Array(arrayBuffer);
+
+        // ZIP 로컬 파일 헤더 스캔
+        const entries = [];
+        let i = 0;
+        while (i < u8.length - 4) {
+          if (u8[i]===0x50 && u8[i+1]===0x4B && u8[i+2]===0x03 && u8[i+3]===0x04) {
+            const method   = u8[i+8]  | u8[i+9]  << 8;
+            const csize    = u8[i+18] | u8[i+19]<<8 | u8[i+20]<<16 | u8[i+21]<<24;
+            const fnLen    = u8[i+26] | u8[i+27] << 8;
+            const extraLen = u8[i+28] | u8[i+29] << 8;
+            const fname    = new TextDecoder().decode(u8.subarray(i+30, i+30+fnLen));
+            const dStart   = i + 30 + fnLen + extraLen;
+            if (/^xl\/worksheets\/sheet\d+\.xml$/.test(fname)) {
+              entries.push({ fname, method, data: u8.subarray(dStart, dStart + csize) });
+            }
+            i = dStart + csize;
+          } else { i++; }
+        }
+
+        // 엑셀 날짜 직렬 변환 (Dec 30, 1899 기준)
+        const EPOCH = new Date(1899, 11, 30).getTime();
+        const toSerial = d => (d.getTime() - EPOCH) / 86400000;
+
+        for (const entry of entries) {
+          // 시트 인덱스 → 시트명 매핑 (sheet1.xml → SheetNames[0])
+          const idx = parseInt(entry.fname.match(/sheet(\d+)\.xml/)[1]) - 1;
+          const sname = wb.SheetNames[idx];
+          if (!sname) continue;
+          const ws = wb.Sheets[sname];
+          if (!ws) continue;
+
+          // 압축 해제
+          let xml;
+          if (entry.method === 0) {
+            xml = new TextDecoder().decode(entry.data);
+          } else {
+            const ds = new DecompressionStream('deflate-raw');
+            const w = ds.writable.getWriter();
+            const r = ds.readable.getReader();
+            w.write(entry.data); w.close();
+            const chunks = [];
+            while (true) {
+              const { done, value } = await r.read();
+              if (done) break;
+              chunks.push(value);
+            }
+            const buf = new Uint8Array(chunks.reduce((n,c)=>n+c.length,0));
+            let off = 0;
+            for (const c of chunks) { buf.set(c, off); off += c.length; }
+            xml = new TextDecoder().decode(buf);
+          }
+
+          // t="d" 셀 추출 → 워크시트에 추가
+          const re = /<c\b([^>]*)t="d"([^>]*)>([\s\S]*?)<\/c>/g;
+          let m;
+          while ((m = re.exec(xml)) !== null) {
+            const attrs = m[1] + m[2];
+            const inner = m[3];
+            const ref   = (attrs.match(/\br="([A-Z]+\d+)"/) || [])[1];
+            const iso   = (inner.match(/<v>([^<]+)<\/v>/) || [])[1];
+            if (!ref || !iso || ws[ref]) continue;
+            const d = new Date(iso);
+            if (isNaN(d.getTime())) continue;
+            const local = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+            ws[ref] = { t: 'n', v: toSerial(local) };
+          }
+        }
+      } catch (e) {
+        console.warn('patchIsoDateCells:', e);
+      }
+    }
+
     async function parseFiles(fileEntries) {
       if (typeof XLSX === "undefined") {
         throw new Error("XLSX 라이브러리를 불러오지 못했습니다. 네트워크/CDN 접근을 확인해주세요.");
