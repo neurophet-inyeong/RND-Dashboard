@@ -1421,8 +1421,8 @@
       try {
         const u8 = new Uint8Array(arrayBuffer);
 
-        // ZIP Central Directory 스캔 (local header보다 정확한 크기 정보 보유)
-        const entries = [];
+        // ZIP Central Directory 스캔 — 중복 항목이 있을 경우 마지막(최신) 항목 사용
+        const entryMap = new Map();
         let eocd = -1;
         for (let j = u8.length - 22; j >= Math.max(0, u8.length - 65558); j--) {
           if (u8[j]===0x50 && u8[j+1]===0x4B && u8[j+2]===0x05 && u8[j+3]===0x06) { eocd = j; break; }
@@ -1441,15 +1441,15 @@
             const lhOff   = u8[pos+42]|u8[pos+43]<<8|u8[pos+44]<<16|u8[pos+45]<<24;
             const fname   = new TextDecoder().decode(u8.subarray(pos+46, pos+46+fnLen));
             if (/^xl\/worksheets\/sheet\d+\.xml$/.test(fname)) {
-              // local header에서 실제 데이터 시작 위치 계산
               const lhFnLen = u8[lhOff+26]|u8[lhOff+27]<<8;
               const lhExLen = u8[lhOff+28]|u8[lhOff+29]<<8;
               const dStart  = lhOff + 30 + lhFnLen + lhExLen;
-              entries.push({ fname, method, data: u8.subarray(dStart, dStart + csize) });
+              entryMap.set(fname, { fname, method, data: u8.subarray(dStart, dStart + csize) });
             }
             pos += 46 + fnLen + exLen + cmLen;
           }
         }
+        const entries = [...entryMap.values()];
 
         // 엑셀 날짜 직렬 변환 (Dec 30, 1899 기준)
         const EPOCH = new Date(1899, 11, 30).getTime();
