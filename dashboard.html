@@ -665,19 +665,31 @@
         });
     }
 
-    // 개요+사업비가 합쳐진 시트를 감지하여 분리
-    // 사업비 헤더 = 단계-연차 계열 셀 AND 시작일 셀 AND 종료일 셀이 같은 행에 존재
+    // 개요+사업비가 합쳐진 시트를 분리
+    // 개요: A2:B15 고정 (matrix 인덱스 1~14)
+    // 사업비: 단계-연차 + 시작일 + 종료일 헤더 행부터
     function parseCombinedSheet(workbook, sheetName) {
       const ws = workbook.Sheets[sheetName];
       if (!ws) return null;
 
       const matrix = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
-      if (matrix.length < 3) return null;
+      if (!matrix.length) return null;
 
+      // 개요: A2:B15 고정 범위 (matrix[1]~matrix[14])
+      const overviewRows = [];
+      for (let r = 1; r <= 14 && r < matrix.length; r++) {
+        const row = matrix[r] || [];
+        const a = row[0] ?? null;
+        const b = row[1] ?? null;
+        if (a !== null && String(a).trim()) {
+          overviewRows.push({ '항목': a, '내용': b });
+        }
+      }
+
+      // 사업비: 단계-연차 + 시작일 + 종료일 헤더 감지
       let budgetHeaderIdx = -1;
       for (let i = 1; i < matrix.length; i++) {
         const texts = (matrix[i] || []).map(v => normalizeKey(v));
-        // 단계-연차, 시작일, 종료일 세 키워드가 동시에 같은 행에 있어야 사업비 헤더로 인정
         const hasYearCol  = texts.some(t => /단계.{0,5}연차|단계-연차/.test(t));
         const hasStartCol = texts.some(t => t === "시작일" || /^시작일$/.test(t));
         const hasEndCol   = texts.some(t => t === "종료일" || /^종료일$/.test(t));
@@ -687,15 +699,16 @@
         }
       }
 
-      if (budgetHeaderIdx <= 0) return null; // 합쳐진 시트 아님
-
       const nonEmpty = r => r.some(v => v !== null && String(v).trim() !== "");
-      const overviewMatrix = matrix.slice(0, budgetHeaderIdx).filter(nonEmpty);
-      const budgetMatrix   = matrix.slice(budgetHeaderIdx).filter(nonEmpty);
+      const budgetMatrix = budgetHeaderIdx > 0
+        ? matrix.slice(budgetHeaderIdx).filter(nonEmpty)
+        : [];
+
+      if (!overviewRows.length && !budgetMatrix.length) return null;
 
       return {
-        overviewRows: parseMatrixToRows(overviewMatrix),
-        budgetRows:   parseMatrixToRows(budgetMatrix),
+        overviewRows,
+        budgetRows: parseMatrixToRows(budgetMatrix),
       };
     }
 
