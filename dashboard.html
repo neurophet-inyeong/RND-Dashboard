@@ -837,15 +837,13 @@
 
       const fields = [];
       rows.forEach((row) => {
-        const entries = Object.entries(row).filter(([, v]) => v !== null && String(v).trim() !== "");
-        if (entries.length >= 2) {
-          const key = String(entries[0][1] ?? entries[0][0]).trim();
-          const rawValue = entries[1][1] ?? "";
-          const value = String(rawValue).trim();
-          if (key && value) {
-            fields.push({ key, value, rawValue });
-          }
-        }
+        const allEntries = Object.entries(row);
+        if (!allEntries.length) return;
+        const key = String(allEntries[0][1] ?? allEntries[0][0] ?? "").trim();
+        if (!key) return;
+        const rawValue = allEntries.length >= 2 ? (allEntries[1][1] ?? "") : "";
+        const value = String(rawValue ?? "").trim();
+        fields.push({ key, value, rawValue });
       });
 
       const dedup = [];
