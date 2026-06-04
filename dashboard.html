@@ -1111,13 +1111,16 @@
                 })()
               : "";
 
+          // 바가 하나도 없으면 행 자체를 표시하지 않음 (사업기간 전 마일스톤 등)
+          if (!planBar && !actBar) return null;
+
           return `<tr>
             <td class="gantt-name-cell">${name}</td>
             <td class="gantt-bar-cell">
               <div class="gantt-bar-track">${todayMonthBg}${monthLines}${planBar}${actBar}${todayLine}</div>
             </td>
           </tr>`;
-        }).join("");
+        }).filter(Boolean).join("");
 
         parts.push(`<div class="gantt-year-block">
           <div class="gantt-year-title">${grp.label} <span style="font-weight:500;font-size:0.85rem;color:#6a7b99;">(${dateFmt(rStart)} ~ ${dateFmt(rEnd)})</span></div>
