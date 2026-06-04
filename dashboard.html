@@ -1456,12 +1456,6 @@
         const EPOCH = new Date(1899, 11, 30).getTime();
         const toSerial = d => (d.getTime() - EPOCH) / 86400000;
 
-        if (eocd >= 0) {
-          const cdO = u8[eocd+16]|u8[eocd+17]<<8|u8[eocd+18]<<16|u8[eocd+19]<<24;
-          const cdS = u8[eocd+12]|u8[eocd+13]<<8|u8[eocd+14]<<16|u8[eocd+15]<<24;
-          console.log("[EOCD] pos:", eocd, "fileSize:", u8.length, "cdOff:", cdO, "cdSz:", cdS, "cdOff+cdSz==eocd:", (cdO+cdS)===eocd);
-        }
-        console.log("[PATCH] eocd found:", eocd >= 0, "entries:", entries.length, entries.map(e=>e.fname));
         for (const entry of entries) {
           // 시트 인덱스 → 시트명 매핑 (sheet1.xml → SheetNames[0])
           const idx = parseInt(entry.fname.match(/sheet(\d+)\.xml/)[1]) - 1;
