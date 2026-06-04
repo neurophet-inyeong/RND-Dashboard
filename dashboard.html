@@ -1429,38 +1429,11 @@
         const name = fileEntry.name.replace(/\.[^.]+$/, "");
         const data = await fileEntry.arrayBuffer();
         const wb = XLSX.read(data, { type: "array" });
-        // t:'d' 타입 셀(ISO 날짜 문자열) → Date 객체로 변환 (XLSX.js가 처리 못하는 타입)
-        wb.SheetNames.forEach(sn => {
-          const ws = wb.Sheets[sn];
-          if (!ws || !ws['!ref']) return;
-          const range = XLSX.utils.decode_range(ws['!ref']);
-          for (let r = range.s.r; r <= range.e.r; r++) {
-            for (let c = range.s.c; c <= range.e.c; c++) {
-              const addr = XLSX.utils.encode_cell({ r, c });
-              const cell = ws[addr];
-              if (cell && cell.t === 'd') {
-                console.log("[D-CELL]", sn, addr, "v:", cell.v, "type:", typeof cell.v);
-                if (typeof cell.v === 'string') {
-                  const d = new Date(cell.v);
-                  if (!isNaN(d.getTime())) {
-                    cell.v = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-                    cell.t = 'n';
-                  }
-                }
-              }
-            }
-          }
-        });
+        // XLSX.js v0.18.x는 t='d'(ISO 날짜) 셀을 파싱 시 버림 → ZIP에서 직접 복원
+        await patchIsoDateCells(wb, data);
         const sheets = {};
         wb.SheetNames.forEach((sheetName) => {
           if (sheetName === "마일스톤") {
-            // 마일스톤 F3 셀 직접 확인 (실행|시작일 첫 데이터 행)
-            const wsMil = wb.Sheets[sheetName];
-            console.log("[WS-ROW3]", sheetName, "!ref:", wsMil && wsMil['!ref']);
-            ['A','B','C','D','E','F','G'].forEach(col => {
-              const key = col + '3';
-              console.log(" ", key, "->", wsMil && wsMil[key]);
-            });
             sheets[sheetName] = parseMilestoneRows(wb, sheetName);
           } else if (sheetName === "정량지표") {
             sheets[sheetName] = parseMetricRows(wb, sheetName);
