@@ -1421,22 +1421,34 @@
       try {
         const u8 = new Uint8Array(arrayBuffer);
 
-        // ZIP 로컬 파일 헤더 스캔
+        // ZIP Central Directory 스캔 (local header보다 정확한 크기 정보 보유)
         const entries = [];
-        let i = 0;
-        while (i < u8.length - 4) {
-          if (u8[i]===0x50 && u8[i+1]===0x4B && u8[i+2]===0x03 && u8[i+3]===0x04) {
-            const method   = u8[i+8]  | u8[i+9]  << 8;
-            const csize    = u8[i+18] | u8[i+19]<<8 | u8[i+20]<<16 | u8[i+21]<<24;
-            const fnLen    = u8[i+26] | u8[i+27] << 8;
-            const extraLen = u8[i+28] | u8[i+29] << 8;
-            const fname    = new TextDecoder().decode(u8.subarray(i+30, i+30+fnLen));
-            const dStart   = i + 30 + fnLen + extraLen;
+        let eocd = -1;
+        for (let j = u8.length - 22; j >= Math.max(0, u8.length - 65558); j--) {
+          if (u8[j]===0x50 && u8[j+1]===0x4B && u8[j+2]===0x05 && u8[j+3]===0x06) { eocd = j; break; }
+        }
+        if (eocd >= 0) {
+          const cdOff = u8[eocd+16]|u8[eocd+17]<<8|u8[eocd+18]<<16|u8[eocd+19]<<24;
+          const cdSz  = u8[eocd+12]|u8[eocd+13]<<8|u8[eocd+14]<<16|u8[eocd+15]<<24;
+          let pos = cdOff;
+          while (pos < cdOff + cdSz && pos + 46 <= u8.length) {
+            if (!(u8[pos]===0x50&&u8[pos+1]===0x4B&&u8[pos+2]===0x01&&u8[pos+3]===0x02)) break;
+            const method  = u8[pos+10]|u8[pos+11]<<8;
+            const csize   = u8[pos+20]|u8[pos+21]<<8|u8[pos+22]<<16|u8[pos+23]<<24;
+            const fnLen   = u8[pos+28]|u8[pos+29]<<8;
+            const exLen   = u8[pos+30]|u8[pos+31]<<8;
+            const cmLen   = u8[pos+32]|u8[pos+33]<<8;
+            const lhOff   = u8[pos+42]|u8[pos+43]<<8|u8[pos+44]<<16|u8[pos+45]<<24;
+            const fname   = new TextDecoder().decode(u8.subarray(pos+46, pos+46+fnLen));
             if (/^xl\/worksheets\/sheet\d+\.xml$/.test(fname)) {
+              // local header에서 실제 데이터 시작 위치 계산
+              const lhFnLen = u8[lhOff+26]|u8[lhOff+27]<<8;
+              const lhExLen = u8[lhOff+28]|u8[lhOff+29]<<8;
+              const dStart  = lhOff + 30 + lhFnLen + lhExLen;
               entries.push({ fname, method, data: u8.subarray(dStart, dStart + csize) });
             }
-            i = dStart + csize;
-          } else { i++; }
+            pos += 46 + fnLen + exLen + cmLen;
+          }
         }
 
         // 엑셀 날짜 직렬 변환 (Dec 30, 1899 기준)
