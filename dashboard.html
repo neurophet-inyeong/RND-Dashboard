@@ -908,6 +908,7 @@
       if (value === null || value === undefined || value === "") return null;
       if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
       if (typeof value === "number") {
+        if (value <= 0) return null; // 날짜 포맷 적용된 빈 셀 → 0 반환 → 무시
         const parsed = XLSX.SSF.parse_date_code(value);
         if (parsed) return new Date(parsed.y, parsed.m - 1, parsed.d);
       }
