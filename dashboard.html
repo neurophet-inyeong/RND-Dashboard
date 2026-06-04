@@ -1475,9 +1475,10 @@
           }
 
           // t="d" 셀 추출 → 워크시트에 추가
-          console.log("[PATCH-XML-SNIPPET]", sname, xml.substring(0, 300));
-          const tDcount = (xml.match(/t="d"/g) || []).length;
-          console.log("[PATCH-TD-COUNT]", sname, 't="d" 개수:', tDcount);
+          if (sname === "마일스톤") {
+            const row3match = xml.match(/<row[^>]*r="3"[^>]*>[\s\S]*?<\/row>/);
+            console.log("[ROW3-XML]", sname, row3match ? row3match[0] : "row3 not found");
+          }
           const re = /<c\b([^>]*)t="d"([^>]*)>([\s\S]*?)<\/c>/g;
           let m;
           let patchCount = 0;
