@@ -1269,7 +1269,43 @@
       return years;
     }
 
-    function buildMilestoneGanttHtml(rows, budgetRows) {
+    function buildProgressStatusCardHtml(progressRows) {
+      if (!progressRows || !progressRows.length) return "";
+
+      const columns = Object.keys(progressRows[0]);
+      const dateCol    = columns.find(c => /날짜/.test(c)) || columns[0];
+      const statusCol  = columns.find(c => /상태/.test(c)) || columns[1];
+      const contentCol = columns.find(c => /내용/.test(c)) || columns[2];
+
+      const statusClass = (status) => {
+        const s = String(status ?? "").trim().toLowerCase();
+        if (/risk|위험|지연|미달/.test(s)) return "progress-status-risk";
+        if (/done|완료/.test(s)) return "progress-status-done";
+        return "progress-status-progress";
+      };
+
+      const items = progressRows
+        .filter(row => String(row[statusCol] ?? "").trim() || String(row[contentCol] ?? "").trim())
+        .map(row => {
+          const date = toYmd(row[dateCol]) || String(row[dateCol] ?? "").trim();
+          const status = String(row[statusCol] ?? "").trim();
+          const content = String(row[contentCol] ?? "").trim();
+          return `<div class="progress-status-item">
+            <span class="progress-status-date">${date}</span>
+            <span class="progress-status-badge ${statusClass(status)}">${status}</span>
+            <span class="progress-status-content">${content}</span>
+          </div>`;
+        }).join("");
+
+      if (!items) return "";
+
+      return `<div class="card progress-status-card">
+        <h3 class="card-title">진행상황</h3>
+        <div class="progress-status-list">${items}</div>
+      </div>`;
+    }
+
+    function buildMilestoneGanttHtml(rows, budgetRows, progressRows) {
       if (!rows.length) return "<p>데이터가 없습니다.</p>";
 
       const columns = Object.keys(rows[0]);
