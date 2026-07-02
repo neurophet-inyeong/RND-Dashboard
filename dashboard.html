@@ -1393,6 +1393,7 @@
       </div>`;
 
       const parts = [legend];
+      const progressCardHtml = buildProgressStatusCardHtml(progressRows);
 
       for (const grp of groups) {
         if (!grp.rows.length || !grp.start || !grp.end) continue;
