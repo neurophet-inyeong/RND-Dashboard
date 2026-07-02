@@ -101,6 +101,7 @@
       display: grid;
       gap: 16px;
       align-content: start;
+      min-width: 0;
     }
 
     .topbar {
@@ -246,7 +247,7 @@
     .table-wrap {
       max-height: 310px;
       overflow-y: auto;
-      overflow-x: hidden;
+      overflow-x: auto;
       border: 1px solid #dce3ef;
       border-radius: 10px;
       background: #fff;
@@ -304,7 +305,7 @@
       border-collapse: collapse;
       min-width: 0;
       font-size: 0.9rem;
-      table-layout: fixed;
+      table-layout: auto;
     }
 
     th,
@@ -343,6 +344,110 @@
 
     .hidden {
       display: none;
+    }
+
+    /* ── 통합 개요 ──────────────────────────────── */
+    .all-overview-grid {
+      display: block;
+      width: 100%;
+    }
+
+    .ov-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      cursor: pointer;
+      transition: box-shadow 0.15s;
+    }
+
+    .ov-card:hover {
+      box-shadow: 0 14px 32px rgba(27,45,75,0.13);
+    }
+
+    .ov-card.active-card {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(74,102,255,0.25), var(--shadow);
+    }
+
+    .ov-card-badge {
+      display: inline-block;
+      background: #eef1ff;
+      color: var(--accent);
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      letter-spacing: 0.01em;
+      align-self: flex-start;
+    }
+
+    .ov-card-name {
+      font-size: 0.97rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    .ov-card-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+
+    .ov-card-table tr:last-child td,
+    .ov-card-table tr:last-child th {
+      border-bottom: none;
+    }
+
+    .ov-card-table th,
+    .ov-card-table td {
+      padding: 5px 6px;
+      border-bottom: 1px solid #edf1f8;
+      vertical-align: top;
+      word-break: break-word;
+      white-space: normal;
+    }
+
+    .ov-card-table th {
+      color: var(--muted);
+      font-weight: 700;
+      white-space: nowrap;
+      width: 38%;
+    }
+
+    .ov-card-table td {
+      color: #23395f;
+      font-weight: 600;
+    }
+
+    tr.ov-row:hover td {
+      background: #f0f4ff;
+    }
+
+    tr.ov-row-active td {
+      background: #eef1ff;
+      font-weight: 700;
+    }
+
+    .ov-table {
+      width: 100%;
+      table-layout: auto;
+      font-size: 0.82rem;
+    }
+
+    .ov-table th,
+    .ov-table td {
+      white-space: normal;
+      word-break: break-word;
+      overflow: visible;
+      text-overflow: unset;
+      vertical-align: top;
+      padding: 7px 8px;
     }
 
     .metric-main-wrap {
@@ -470,6 +575,23 @@
       border-right: none;
       box-sizing: border-box;
     }
+    /* 미착수 초과: 계획 시작일이 지났는데 실행 미착수 */
+    .gantt-overdue { top: 5px; height: 10px; background: #e03e3e; opacity: 0.9; }
+    /* 늦은 시작: 실행 시작일이 계획보다 늦음 */
+    .gantt-late-start {
+      top: 18px; height: 9px;
+      background: rgba(224, 62, 62, 0.12);
+      border: 2px dashed #e03e3e;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .gantt-late-start-open {
+      top: 18px; height: 9px;
+      background: transparent;
+      border: 2px dashed #e03e3e;
+      border-right: none;
+      box-sizing: border-box;
+    }
     .gantt-today-month-bg {
       position: absolute; top: 0; bottom: 0;
       background: rgba(255, 160, 0, 0.10); z-index: 0; pointer-events: none;
@@ -492,6 +614,8 @@
     <aside class="sidebar">
       <div class="logo">RnD Dashboard</div>
 
+      <button id="allOverviewBtn" class="menu-btn">📋 통합 개요</button>
+
       <div>
         <div class="s-title">Project Data</div>
         <div id="projectMenu" class="menu-list"></div>
@@ -506,7 +630,7 @@
 
     <main class="main">
       <div class="topbar">
-        <h1 class="page-title">과제 현황</h1>
+        <h1 id="pageTitle" class="page-title">과제 현황</h1>
         <button id="refreshBtn" class="refresh-btn">데이터 새로고침</button>
       </div>
 
@@ -517,61 +641,151 @@
 
       <div id="message" class="warn"></div>
 
-      <section class="card">
-        <h2 class="card-title">개요</h2>
-        <div class="overview-wrap">
-          <div id="overviewGrid"></div>
-        </div>
+      <!-- 통합 개요 섹션 -->
+      <section id="allOverviewSection" class="hidden" style="min-width:0;overflow:hidden;">
+        <div id="allOverviewGrid" class="all-overview-grid"></div>
       </section>
 
-      <section class="sheet-stack">
-        <article class="card">
-          <h2 class="card-title">시트 상세</h2>
-          <div id="sheetTabs" class="subtabs"></div>
-          <p id="sheetHint" class="hint"></p>
-          <div id="activeSheetWrap" class="table-wrap"></div>
-        </article>
+      <!-- 개별 과제 섹션 -->
+      <section id="projectSection">
+        <section class="card">
+          <h2 class="card-title">개요</h2>
+          <div class="overview-wrap">
+            <div id="overviewGrid"></div>
+          </div>
+        </section>
+
+        <section class="sheet-stack">
+          <article class="card">
+            <h2 class="card-title">시트 상세</h2>
+            <div id="sheetTabs" class="subtabs"></div>
+            <p id="sheetHint" class="hint"></p>
+            <div id="activeSheetWrap" class="table-wrap"></div>
+          </article>
+        </section>
       </section>
     </main>
   </div>
 
   <script>
+    // file:// 로 열렸을 때 서버가 살아있으면 즉시 리다이렉트
     if (location.protocol === 'file:') {
-      fetch('http://localhost:8080/', {
-        method: 'HEAD',
-        mode: 'no-cors',
-        cache: 'no-store',
-        signal: AbortSignal.timeout(1500)
-      })
-      .then(() => location.replace('http://localhost:8080/dashboard.html'))
-      .catch(() => {
-        const msg = document.getElementById('message');
-        msg.style.display = 'block';
-        msg.innerHTML =
-          '<b>install-autostart.bat</b> 을 한 번 실행하면 이후 이 파일을 더블클릭할 때마다 자동으로 열립니다. ' +
-          '현재는 왼쪽 <b>엑셀 직접 업로드</b>로 데이터를 확인할 수 있습니다.';
-      });
+      fetch('http://localhost:8080/', { method: 'HEAD', mode: 'no-cors', cache: 'no-store',
+        signal: AbortSignal.timeout(800) })
+        .then(() => location.replace('http://localhost:8080/dashboard.html'))
+        .catch(() => {}); // 서버 없으면 File System API로 계속 진행
     }
 
     const state = {
       projects: [],
       activeProject: "",
-      activeSheetTab: "사업비"
+      activeSheetTab: "사업비",
+      view: "project"   // "project" | "allOverview"
     };
     let lastReloadToken = "";
 
+    // ── IndexedDB: 폴더 핸들 영속 저장 ──────────────────────────────────
+    function openHandleDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open('rnd-dashboard', 1);
+        req.onupgradeneeded = () => req.result.createObjectStore('handles');
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+    async function getSavedHandle() {
+      try {
+        const db = await openHandleDB();
+        return await new Promise(resolve => {
+          const req = db.transaction('handles', 'readonly').objectStore('handles').get('projectsDir');
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        });
+      } catch { return null; }
+    }
+    async function saveHandle(handle) {
+      try {
+        const db = await openHandleDB();
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction('handles', 'readwrite');
+          tx.objectStore('handles').put(handle, 'projectsDir');
+          tx.oncomplete = resolve;
+          tx.onerror = reject;
+        });
+      } catch {}
+    }
+
+    // ── File System Access API: 폴더에서 엑셀 읽기 ──────────────────────
+    async function loadFromDirectoryHandle(dirHandle) {
+      const files = [];
+      for await (const [name, handle] of dirHandle.entries()) {
+        if (handle.kind === 'file' && isExcelPath(name)) {
+          files.push(await handle.getFile());
+        }
+      }
+      if (!files.length) {
+        setMessage("폴더에 Excel 파일(.xlsx, .xls, .xlsm)이 없습니다.");
+        return;
+      }
+      await loadFilesIntoDashboard(files, "projects 폴더");
+    }
+
+    async function pickAndLoadDirectory() {
+      if (!('showDirectoryPicker' in window)) {
+        setMessage("이 브라우저는 폴더 선택을 지원하지 않습니다. '엑셀 직접 업로드'를 이용해주세요.");
+        return;
+      }
+      let handle = await getSavedHandle();
+      if (handle) {
+        const perm = await handle.requestPermission({ mode: 'read' });
+        if (perm !== 'granted') handle = null;
+      }
+      if (!handle) {
+        try {
+          handle = await window.showDirectoryPicker({ mode: 'read' });
+          await saveHandle(handle);
+        } catch (err) {
+          if (err.name !== 'AbortError') setMessage(`폴더 선택 오류: ${err.message}`);
+          return;
+        }
+      }
+      reloadProjectBtn.textContent = "📂 폴더 다시 읽기";
+      reloadProjectBtn.classList.remove("active");
+      await loadFromDirectoryHandle(handle);
+    }
+
+    async function autoLoadDirectory() {
+      if (!('showDirectoryPicker' in window)) return false;
+      const handle = await getSavedHandle();
+      if (!handle) return false;
+      try {
+        const perm = await handle.requestPermission({ mode: 'read' });
+        if (perm !== 'granted') return false;
+        await loadFromDirectoryHandle(handle);
+        reloadProjectBtn.textContent = "📂 폴더 다시 읽기";
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
     const projectMenu = document.getElementById("projectMenu");
+    const allOverviewBtn = document.getElementById("allOverviewBtn");
     const reloadProjectBtn = document.getElementById("reloadProjectBtn");
     const uploadBtn = document.getElementById("uploadBtn");
     const refreshBtn = document.getElementById("refreshBtn");
     const fileInput = document.getElementById("fileInput");
     const messageEl = document.getElementById("message");
     const baseDate = document.getElementById("baseDate");
+    const pageTitle = document.getElementById("pageTitle");
 
     const overviewGrid = document.getElementById("overviewGrid");
     const sheetTabs = document.getElementById("sheetTabs");
     const sheetHint = document.getElementById("sheetHint");
     const activeSheetWrap = document.getElementById("activeSheetWrap");
+    const allOverviewSection = document.getElementById("allOverviewSection");
+    const allOverviewGrid = document.getElementById("allOverviewGrid");
+    const projectSection = document.getElementById("projectSection");
 
     const SHEET_TABS = [
       { key: "사업비", label: "사업비", hint: "사업비 시트 상위 120행" },
@@ -813,14 +1027,100 @@
       return state.projects.find((p) => p.name === state.activeProject) || state.projects[0];
     }
 
+    // ── 통합 개요: 개요 필드 맵 추출 ─────────────────────────────────────
+    const OV_FIELDS = [
+      "사업명", "당해기간", "주관/공동(책임자)"
+    ];
+
+    function extractOverviewMap(project) {
+      const rows = project.sheets["개요"] || [];
+      const map = {};
+      rows.forEach((row) => {
+        const entries = Object.entries(row);
+        if (!entries.length) return;
+        const key = String(entries[0][1] ?? entries[0][0] ?? "").trim();
+        if (!key) return;
+        const rawVal = entries.length >= 2 ? (entries[1][1] ?? "") : "";
+        map[key] = key === "공고일"
+          ? (toYmd(rawVal) || String(rawVal ?? "").trim())
+          : String(rawVal ?? "").trim();
+      });
+      return map;
+    }
+
+    function renderAllOverview() {
+      allOverviewGrid.innerHTML = "";
+
+      if (!state.projects.length) {
+        allOverviewGrid.innerHTML = "<p style='color:var(--muted)'>불러온 과제가 없습니다.</p>";
+        return;
+      }
+
+      const ALL_FIELDS = ["과제번호", "과제명", ...OV_FIELDS];
+      const maps = state.projects.map(p => extractOverviewMap(p));
+
+      // 헤더: 필드명
+      const thead = `<thead><tr>
+        ${ALL_FIELDS.map(f => `<th>${f}</th>`).join("")}
+      </tr></thead>`;
+
+      // 행: 과제별 데이터
+      const tbody = `<tbody>${state.projects.map((project, i) => {
+        const map = maps[i];
+        const isActive = project.name === state.activeProject;
+        const cells = ALL_FIELDS.map(f => `<td>${map[f] || ""}</td>`).join("");
+        return `<tr class="ov-row${isActive ? " ov-row-active" : ""}" data-name="${project.name}">${cells}</tr>`;
+      }).join("")}</tbody>`;
+
+      const wrap = document.createElement("div");
+      wrap.style.cssText = "overflow-y:auto;width:100%;height:calc(100vh - 160px);border:1px solid var(--line);border-radius:14px;background:#fff;box-sizing:border-box;box-shadow:0 10px 24px rgba(27,45,75,0.08);";
+      wrap.innerHTML = `<table class="sheet-table ov-table">${thead}${tbody}</table>`;
+
+      // 행 클릭 → 과제 상세로 이동
+      wrap.querySelectorAll("tr.ov-row").forEach(tr => {
+        tr.style.cursor = "pointer";
+        tr.addEventListener("click", () => {
+          state.activeProject = tr.dataset.name;
+          switchView("project");
+          renderProjectMenu();
+          renderDashboard();
+        });
+      });
+
+      allOverviewGrid.appendChild(wrap);
+    }
+
+    function switchView(view) {
+      state.view = view;
+      const mainEl = document.querySelector(".main");
+      if (view === "allOverview") {
+        allOverviewSection.classList.remove("hidden");
+        projectSection.classList.add("hidden");
+        pageTitle.textContent = "통합 개요";
+        allOverviewBtn.classList.add("active");
+        mainEl.style.padding = "24px 24px 0";
+        renderProjectMenu();
+        renderAllOverview();
+      } else {
+        allOverviewSection.classList.add("hidden");
+        projectSection.classList.remove("hidden");
+        pageTitle.textContent = "과제 현황";
+        allOverviewBtn.classList.remove("active");
+        mainEl.style.padding = "";
+        renderProjectMenu();
+      }
+    }
+
     function renderProjectMenu() {
       projectMenu.innerHTML = "";
       for (const project of state.projects) {
         const btn = document.createElement("button");
-        btn.className = `menu-btn${project.name === state.activeProject ? " active" : ""}`;
+        const isActive = state.view === "project" && project.name === state.activeProject;
+        btn.className = `menu-btn${isActive ? " active" : ""}`;
         btn.textContent = `📊 ${project.name}`;
         btn.addEventListener("click", () => {
           state.activeProject = project.name;
+          switchView("project");
           renderProjectMenu();
           renderDashboard();
         });
@@ -1037,6 +1337,8 @@
         <div class="gantt-legend-item"><div class="gantt-legend-dot plan"></div><span>계획</span></div>
         ${hasActual ? '<div class="gantt-legend-item"><div class="gantt-legend-dot actual"></div><span>실행</span></div>' : ""}
         ${hasActual ? '<div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:transparent;border:2px dashed #27ae6f;border-right:none;height:9px;width:22px;border-radius:0"></div><span>실행중(종료일 미입력)</span></div>' : ""}
+        <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#e03e3e;height:10px;"></div><span>미착수 초과</span></div>
+        <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:rgba(224,62,62,0.12);border:2px dashed #e03e3e;box-sizing:border-box;height:9px;border-radius:4px;"></div><span>늦은 시작</span></div>
       </div>`;
 
       const parts = [legend];
@@ -1106,12 +1408,17 @@
             return `<div class="gantt-bar ${cls}" style="left:${l}%;width:${w}%" title="${dateFmt(s)} ~ ${dateFmt(e)}"></div>`;
           };
 
+          // 미착수 초과: 계획 시작일이 오늘 이전인데 실행 시작일 없음 → 다홍색
+          const isOverdue = ps && !as && ps <= today;
+          // 늦은 시작: 실행 시작일이 계획 시작일보다 늦음 → 다홍색 점선
+          const isLateStart = as && ps && as > ps;
+
           // 규칙 2: 계획 종료일이 사업기간 이전이면 표시 안 함 (시작일만 이전이면 rStart부터 표시)
-          const planBar = makeBar(ps, pe, "gantt-plan");
+          const planBar = makeBar(ps, pe, isOverdue ? "gantt-overdue" : "gantt-plan");
 
           // 규칙 3·4: 실행 종료일 있으면 실선 바, 시작일만 있으면 점선 바
           const actBar = (as && ae)
-            ? makeBar(as, ae, "gantt-actual")
+            ? makeBar(as, ae, isLateStart ? "gantt-late-start" : "gantt-actual")
             : (as && !ae)
               ? (() => {
                   const cs = new Date(Math.max(as.getTime(), rStart.getTime()));
@@ -1119,7 +1426,8 @@
                   if (ce <= cs) return "";
                   const l = pct(cs).toFixed(2);
                   const w = Math.max(0.3, pct(ce) - pct(cs)).toFixed(2);
-                  return `<div class="gantt-bar gantt-actual-open" style="left:${l}%;width:${w}%" title="${dateFmt(as)} ~ 오늘(${dateFmt(today)})"></div>`;
+                  const cls = isLateStart ? "gantt-late-start-open" : "gantt-actual-open";
+                  return `<div class="gantt-bar ${cls}" style="left:${l}%;width:${w}%" title="${dateFmt(as)} ~ 오늘(${dateFmt(today)})"></div>`;
                 })()
               : "";
 
@@ -1423,6 +1731,10 @@
     }
 
     function renderDashboard() {
+      if (state.view === "allOverview") {
+        renderAllOverview();
+        return;
+      }
       const project = getActiveProject();
       if (!project) return;
 
@@ -1654,17 +1966,34 @@
     }
 
     function bindEvents() {
+      allOverviewBtn.addEventListener("click", () => {
+        if (state.view === "allOverview") {
+          switchView("project");
+          renderDashboard();
+        } else {
+          switchView("allOverview");
+        }
+      });
+
       uploadBtn.addEventListener("click", () => fileInput.click());
       fileInput.addEventListener("change", () => {
         loadFromInput().catch((err) => setMessage(`파일 읽기 오류: ${err.message}`));
       });
 
       refreshBtn.addEventListener("click", () => {
-        loadProjectFolder(false).catch((err) => setMessage(`새로고침 오류: ${err.message}`));
+        if (location.protocol === "file:") {
+          pickAndLoadDirectory().catch((err) => setMessage(`새로고침 오류: ${err.message}`));
+        } else {
+          loadProjectFolder(false).catch((err) => setMessage(`새로고침 오류: ${err.message}`));
+        }
       });
 
       reloadProjectBtn.addEventListener("click", () => {
-        loadProjectFolder(false).catch((err) => setMessage(`폴더 로딩 오류: ${err.message}`));
+        if (location.protocol === "file:") {
+          pickAndLoadDirectory().catch((err) => setMessage(`폴더 로딩 오류: ${err.message}`));
+        } else {
+          loadProjectFolder(false).catch((err) => setMessage(`폴더 로딩 오류: ${err.message}`));
+        }
       });
     }
 
@@ -1674,12 +2003,28 @@
       checkReloadToken();
       setInterval(checkReloadToken, 3000);
       if (location.protocol === "file:") {
-        setMessage("file:// 실행에서는 projects 자동 로딩이 제한됩니다. http://localhost:8080/dashboard.html 로 접속하거나 왼쪽에서 엑셀을 직접 업로드해주세요.");
+        // 서버 리다이렉트(800ms)가 없으면 File System API로 자동 로드 시도
+        setTimeout(async () => {
+          if ('showDirectoryPicker' in window) {
+            const loaded = await autoLoadDirectory();
+            if (!loaded) {
+              const saved = await getSavedHandle();
+              reloadProjectBtn.textContent = saved ? "📂 데이터 불러오기" : "📁 프로젝트 폴더 연결하기";
+              if (saved) {
+                reloadProjectBtn.classList.add("active");
+                reloadProjectBtn.focus();
+              }
+            }
+          } else {
+            reloadProjectBtn.style.display = "none";
+            setMessage("'엑셀 직접 업로드' 버튼으로 Excel 파일을 선택해주세요.");
+          }
+        }, 900);
+      } else {
+        loadProjectFolder(false).catch((err) => {
+          setMessage(`자동 로딩에 실패했습니다: ${err.message}`);
+        });
       }
-
-      loadProjectFolder(false).catch((err) => {
-        setMessage(`자동 로딩에 실패했습니다: ${err.message}`);
-      });
     }
 
     init();
