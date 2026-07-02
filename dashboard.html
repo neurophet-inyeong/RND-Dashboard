@@ -1494,6 +1494,10 @@
           </tr>`;
         }).filter(Boolean).join("");
 
+        if (todayInRange && progressCardHtml) {
+          parts.push(progressCardHtml);
+        }
+
         parts.push(`<div class="gantt-year-block">
           <div class="gantt-year-title">${grp.label} <span style="font-weight:500;font-size:0.85rem;color:#6a7b99;">(${dateFmt(rStart)} ~ ${dateFmt(rEnd)})</span></div>
           <table class="gantt-table">
@@ -1771,9 +1775,10 @@
       if (tab.key === "마일스톤") {
         const rows = project.sheets["마일스톤"] || [];
         const budgetRows = project.sheets["사업비"] || [];
+        const progressRows = project.sheets["진행상황"] || [];
         activeSheetWrap.style.cssText =
           "overflow:visible;max-height:none;border:none;border-radius:0;background:transparent;";
-        activeSheetWrap.innerHTML = buildMilestoneGanttHtml(rows, budgetRows);
+        activeSheetWrap.innerHTML = buildMilestoneGanttHtml(rows, budgetRows, progressRows);
         return;
       }
 
