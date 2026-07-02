@@ -1914,6 +1914,8 @@
             sheets[sheetName] = parseMilestoneRows(wb, sheetName);
           } else if (sheetName === "정량지표") {
             sheets[sheetName] = parseMetricRows(wb, sheetName);
+          } else if (sheetName === "진행상황") {
+            sheets[sheetName] = sheetRows(wb, sheetName, 1);
           } else {
             const combined = parseCombinedSheet(wb, sheetName);
             if (combined) {
