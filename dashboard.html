@@ -525,6 +525,21 @@
     .gantt-legend-dot { width: 22px; height: 9px; border-radius: 3px; }
     .gantt-legend-dot.plan { background: #4a66ff; }
     .gantt-legend-dot.actual { background: #27ae6f; }
+    .progress-status-card { margin-bottom: 16px; }
+    .progress-status-list { display: grid; gap: 8px; }
+    .progress-status-item {
+      display: grid; grid-template-columns: 92px auto 1fr; gap: 10px;
+      align-items: baseline; font-size: 0.88rem; color: #33486f;
+    }
+    .progress-status-date { color: #6a7b99; font-weight: 600; white-space: nowrap; }
+    .progress-status-badge {
+      justify-self: start; padding: 2px 9px; border-radius: 999px;
+      font-weight: 700; font-size: 0.78rem; white-space: nowrap;
+    }
+    .progress-status-badge.progress-status-progress { background: #eaf0ff; color: #3752d6; }
+    .progress-status-badge.progress-status-risk { background: #fdeaea; color: #bf2f2f; }
+    .progress-status-badge.progress-status-done { background: #eefaf2; color: #137a2c; }
+    .progress-status-content { color: #23395f; }
     .gantt-year-block { margin-bottom: 28px; }
     .gantt-year-title {
       font-weight: 800; font-size: 0.95rem; color: #2f3f5e;
