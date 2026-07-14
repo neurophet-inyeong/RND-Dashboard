@@ -1,24 +1,46 @@
 @echo off
-chcp 65001 > nul
 cd /d "%~dp0"
 
-:: 포트 8080이 이미 사용 중인지 확인
+:: Check if port 8080 is already in use
 netstat -an 2>nul | find "8080" | find "LISTENING" > nul
 if %errorlevel% == 0 (
-    echo [RnD Dashboard] 포트 8080이 이미 열려 있습니다. 브라우저를 엽니다.
+    echo [RnD Dashboard] Port 8080 is already open. Opening browser.
     start "" "http://localhost:8080/dashboard.html"
     goto :end
 )
 
-:: 새 창에서 HTTP 서버 실행
-start "RnD Dashboard Server" /min py -m http.server 8080
-timeout /t 1 /nobreak > nul
+:: Check that the py launcher is available
+where py > nul 2>&1
+if not %errorlevel% == 0 (
+    echo [RnD Dashboard] ERROR: Python launcher py.exe was not found.
+    echo Please check that Python is installed and registered in PATH.
+    pause
+    goto :end
+)
 
-:: 브라우저 열기
+:: Start the HTTP server in a new window
+start "RnD Dashboard Server" /min py -m http.server 8080
+
+:: Wait up to 5 seconds for the server to come up
+set /a tries=0
+:waitloop
+timeout /t 1 /nobreak > nul
+set /a tries+=1
+netstat -an 2>nul | find "8080" | find "LISTENING" > nul
+if %errorlevel% == 0 goto :serverready
+if %tries% lss 5 goto :waitloop
+
+echo [RnD Dashboard] ERROR: server did not start within 5 seconds.
+echo Please check that running "py -m http.server 8080" works.
+pause
+goto :end
+
+:serverready
+:: Open the browser
 start "" "http://localhost:8080/dashboard.html"
 
 echo.
-echo [RnD Dashboard] 서버가 실행 중입니다.
-echo 이 창(RnD Dashboard Server)을 닫으면 서버가 종료됩니다.
+echo [RnD Dashboard] Server is running.
+echo Closing this window (RnD Dashboard Server) will stop the server.
 
 :end

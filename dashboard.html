@@ -834,6 +834,8 @@
     }
 
     function isExcelPath(path) {
+      const name = path.split(/[\\/]/).pop() || "";
+      if (name.startsWith("~$")) return false; // 엑셀 실행 중 생성되는 잠금 파일 제외
       return /\.(xlsx|xls|xlsm)$/i.test(path);
     }
 
@@ -2069,10 +2071,13 @@
             if (!loaded) {
               const saved = await getSavedHandle();
               reloadProjectBtn.textContent = saved ? "📂 데이터 불러오기" : "📁 프로젝트 폴더 연결하기";
-              if (saved) {
-                reloadProjectBtn.classList.add("active");
-                reloadProjectBtn.focus();
-              }
+              reloadProjectBtn.classList.add("active");
+              reloadProjectBtn.focus();
+              setMessage(
+                saved
+                  ? "왼쪽의 '📂 데이터 불러오기' 버튼을 눌러 프로젝트 폴더 접근 권한을 다시 허용해주세요."
+                  : "브라우저 보안 정책상 폴더를 자동으로 읽을 수 없습니다. 왼쪽의 '📁 프로젝트 폴더 연결하기' 버튼을 눌러 projects 폴더를 선택해주세요. (또는 open-dashboard.bat 실행 권장)"
+              );
             }
           } else {
             reloadProjectBtn.style.display = "none";
