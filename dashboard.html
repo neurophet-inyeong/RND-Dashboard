@@ -1286,8 +1286,20 @@
         return "progress-status-progress";
       };
 
-      const items = progressRows
-        .filter(row => String(row[statusCol] ?? "").trim() || String(row[contentCol] ?? "").trim())
+      const validRows = progressRows
+        .filter(row => String(row[statusCol] ?? "").trim() || String(row[contentCol] ?? "").trim());
+
+      const latestTime = validRows.reduce((max, row) => {
+        const d = parseToDate(row[dateCol]);
+        return d && (max === null || d.getTime() > max) ? d.getTime() : max;
+      }, null);
+
+      const items = validRows
+        .filter(row => {
+          if (latestTime === null) return true;
+          const d = parseToDate(row[dateCol]);
+          return d && d.getTime() === latestTime;
+        })
         .map(row => {
           const date = toYmd(row[dateCol]) || String(row[dateCol] ?? "").trim();
           const status = String(row[statusCol] ?? "").trim();
