@@ -1425,20 +1425,11 @@
       state.view = view;
       const mainEl = document.querySelector(".main");
 
-      allOverviewSection.classList.add("hidden");
       budgetLedgerSection.classList.add("hidden");
       projectSection.classList.add("hidden");
-      allOverviewBtn.classList.remove("active");
       budgetLedgerBtn.classList.remove("active");
 
-      if (view === "allOverview") {
-        allOverviewSection.classList.remove("hidden");
-        pageTitle.textContent = "통합 개요";
-        allOverviewBtn.classList.add("active");
-        mainEl.style.padding = "24px 24px 0";
-        renderProjectMenu();
-        renderAllOverview();
-      } else if (view === "budgetLedger") {
+      if (view === "budgetLedger") {
         budgetLedgerSection.classList.remove("hidden");
         pageTitle.textContent = "총괄표 (예산 현황)";
         budgetLedgerBtn.classList.add("active");
