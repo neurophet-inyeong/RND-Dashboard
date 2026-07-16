@@ -1084,68 +1084,6 @@
       return state.projects.find((p) => p.name === state.activeProject) || state.projects[0];
     }
 
-    // ── 통합 개요: 개요 필드 맵 추출 ─────────────────────────────────────
-    const OV_FIELDS = [
-      "사업명", "당해기간", "주관/공동(책임자)"
-    ];
-
-    function extractOverviewMap(project) {
-      const rows = project.sheets["개요"] || [];
-      const map = {};
-      rows.forEach((row) => {
-        const entries = Object.entries(row);
-        if (!entries.length) return;
-        const key = String(entries[0][1] ?? entries[0][0] ?? "").trim();
-        if (!key) return;
-        const rawVal = entries.length >= 2 ? (entries[1][1] ?? "") : "";
-        map[key] = key === "공고일"
-          ? (toYmd(rawVal) || String(rawVal ?? "").trim())
-          : String(rawVal ?? "").trim();
-      });
-      return map;
-    }
-
-    function renderAllOverview() {
-      allOverviewGrid.innerHTML = "";
-
-      if (!state.projects.length) {
-        allOverviewGrid.innerHTML = "<p style='color:var(--muted)'>불러온 과제가 없습니다.</p>";
-        return;
-      }
-
-      const ALL_FIELDS = ["과제번호", "과제명", ...OV_FIELDS];
-      const maps = state.projects.map(p => extractOverviewMap(p));
-
-      // 헤더: 필드명
-      const thead = `<thead><tr>
-        ${ALL_FIELDS.map(f => `<th>${f}</th>`).join("")}
-      </tr></thead>`;
-
-      // 행: 과제별 데이터
-      const tbody = `<tbody>${state.projects.map((project, i) => {
-        const map = maps[i];
-        const isActive = project.name === state.activeProject;
-        const cells = ALL_FIELDS.map(f => `<td>${map[f] || ""}</td>`).join("");
-        return `<tr class="ov-row${isActive ? " ov-row-active" : ""}" data-name="${project.name}">${cells}</tr>`;
-      }).join("")}</tbody>`;
-
-      const wrap = document.createElement("div");
-      wrap.style.cssText = "overflow-y:auto;width:100%;height:calc(100vh - 160px);border:1px solid var(--line);border-radius:14px;background:#fff;box-sizing:border-box;box-shadow:0 10px 24px rgba(27,45,75,0.08);";
-      wrap.innerHTML = `<table class="sheet-table ov-table">${thead}${tbody}</table>`;
-
-      // 행 클릭 → 과제 상세로 이동
-      wrap.querySelectorAll("tr.ov-row").forEach(tr => {
-        tr.style.cursor = "pointer";
-        tr.addEventListener("click", () => {
-          state.activeProject = tr.dataset.name;
-          switchView("project");
-          renderProjectMenu();
-          renderDashboard();
-        });
-      });
-
-      allOverviewGrid.appendChild(wrap);
-    }
 
     // ── 총괄표(예산 현황) ────────────────────────────────────────────────
     function formatKrw(value) {
