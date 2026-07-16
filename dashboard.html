@@ -1339,9 +1339,9 @@
         });
       }
 
-      body.querySelectorAll(".ledger-filter-input").forEach((input) => {
-        input.addEventListener("input", () => {
-          state.ledgerFilters[input.dataset.key] = input.value;
+      body.querySelectorAll(".ledger-filter-select").forEach((select) => {
+        select.addEventListener("change", () => {
+          state.ledgerFilters[select.dataset.key] = select.value;
           renderTbody();
         });
       });
