@@ -1150,6 +1150,32 @@
       return [...map.entries()].sort((a, b) => b[1] - a[1]);
     }
 
+    const LEDGER_COST_CATEGORIES = [
+      { key: "인건비", label: "인건비", color: "#4a66ff" },
+      { key: "연구활동비", label: "연구활동비", color: "#27ae6f" },
+      { key: "연구재료비", label: "연구재료비", color: "#f1a94d" },
+      { key: "연구시설장비비", label: "연구시설장비비", color: "#e0763f" },
+      { key: "연구수당", label: "연구수당", color: "#9b6bdb" },
+      { key: "간접비", label: "간접비", color: "#4dbfc7" }
+    ];
+
+    // 원본데이터의 시작일 연도 기준으로 비용 항목(인건비/연구활동비 등)을 합산
+    function groupYearlyCosts(detailRows) {
+      const byYear = new Map();
+      for (const r of detailRows) {
+        const d = parseToDate(r["시작일"]);
+        if (!d) continue;
+        const year = d.getFullYear();
+        if (!byYear.has(year)) byYear.set(year, {});
+        const bucket = byYear.get(year);
+        for (const cat of LEDGER_COST_CATEGORIES) {
+          bucket[cat.key] = (bucket[cat.key] || 0) + (parseNumericLike(r[cat.key]) || 0);
+        }
+      }
+      const years = [...byYear.keys()].sort((a, b) => a - b);
+      return { years, categories: LEDGER_COST_CATEGORIES, map: byYear };
+    }
+
     async function loadLedgerData() {
       if (state.ledger) return state.ledger;
 
