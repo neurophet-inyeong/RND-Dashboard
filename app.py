@@ -139,6 +139,84 @@ def format_krw(value: float) -> str:
     return f"{value:,.0f} 원"
 
 
+@st.cache_data(show_spinner=False)
+def load_ledger(path: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+    summary = pd.read_excel(path, sheet_name="총괄표", header=0)
+    summary = summary[summary["부처"].astype(str) != "0"]
+    summary = summary.dropna(subset=["번호", "총 사업비"])
+    summary["번호"] = summary["번호"].astype(int)
+
+    detail = pd.read_excel(path, sheet_name="원본데이터", header=0)
+    detail = detail.dropna(subset=["시트명"])
+    detail["시트명"] = detail["시트명"].astype(int)
+
+    return summary, detail
+
+
+def render_budget_ledger() -> None:
+    st.subheader("전사 과제 예산 현황 (SharePoint 연동 · 총괄표/원본데이터)")
+
+    if not LEDGER_PATH.exists():
+        st.warning(
+            f"통합관리 파일을 찾을 수 없습니다: {LEDGER_PATH}\n"
+            "OneDrive 동기화 상태를 확인해주세요."
+        )
+        return
+
+    summary, detail = load_ledger(str(LEDGER_PATH))
+
+    total_budget = summary["총 사업비"].sum()
+    gov_fund = summary["정부지원금\n(현금)"].sum()
+    private_fund = summary["총 민간부담금"].sum()
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("전체 과제 수", f"{len(summary):,}")
+    c2.metric("총 사업비 합계", format_krw(total_budget))
+    c3.metric("정부지원금 합계", format_krw(gov_fund))
+    c4.metric("민간부담금 합계", format_krw(private_fund))
+
+    dept_summary = (
+        summary.groupby("부처", as_index=False)["총 사업비"]
+        .sum()
+        .sort_values("총 사업비", ascending=False)
+    )
+    dept_chart = px.bar(
+        dept_summary, x="부처", y="총 사업비", title="부처별 총 사업비", text_auto=True
+    )
+    dept_chart.update_layout(yaxis_title="원")
+    st.plotly_chart(dept_chart, use_container_width=True)
+
+    type_summary = summary.groupby("유형", as_index=False)["총 사업비"].sum()
+    type_chart = px.pie(
+        type_summary, names="유형", values="총 사업비", title="R&D / 비R&D 사업비 비중"
+    )
+    st.plotly_chart(type_chart, use_container_width=True)
+
+    st.markdown("### 과제별 상세 (총괄표 + 연차별 예산 breakdown)")
+
+    project_rows = summary.sort_values("번호")
+    label_map = {
+        int(row["번호"]): f"[{int(row['번호'])}] {row['사업명']}"
+        for _, row in project_rows.iterrows()
+    }
+    selected_num = st.selectbox(
+        "과제 선택", options=list(label_map.keys()), format_func=lambda n: label_map[n]
+    )
+
+    project_row = summary[summary["번호"] == selected_num].iloc[0]
+    st.dataframe(project_row.to_frame().T, use_container_width=True)
+
+    yearly = detail[detail["시트명"] == selected_num]
+    if yearly.empty:
+        st.info("이 과제의 연차별 상세 데이터(원본데이터)가 없습니다.")
+    else:
+        st.dataframe(yearly, use_container_width=True)
+        yearly_chart = px.bar(
+            yearly, x="단계-연차", y="합계", title="연차별 사업비 합계", text_auto=True
+        )
+        st.plotly_chart(yearly_chart, use_container_width=True)
+
+
 def render_overview(files: list[Path]) -> None:
     st.subheader("전체 프로젝트 성과 요약")
 
