@@ -2355,15 +2355,6 @@
     }
 
     function bindEvents() {
-      allOverviewBtn.addEventListener("click", () => {
-        if (state.view === "allOverview") {
-          switchView("project");
-          renderDashboard();
-        } else {
-          switchView("allOverview");
-        }
-      });
-
       budgetLedgerBtn.addEventListener("click", () => {
         if (state.view === "budgetLedger") {
           switchView("project");
