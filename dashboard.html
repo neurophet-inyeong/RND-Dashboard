@@ -1833,6 +1833,10 @@
         renderAllOverview();
         return;
       }
+      if (state.view === "budgetLedger") {
+        renderBudgetLedger();
+        return;
+      }
       const project = getActiveProject();
       if (!project) return;
 
@@ -2072,6 +2076,15 @@
           renderDashboard();
         } else {
           switchView("allOverview");
+        }
+      });
+
+      budgetLedgerBtn.addEventListener("click", () => {
+        if (state.view === "budgetLedger") {
+          switchView("project");
+          renderDashboard();
+        } else {
+          switchView("budgetLedger");
         }
       });
 
