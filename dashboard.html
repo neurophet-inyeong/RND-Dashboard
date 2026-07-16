@@ -1325,8 +1325,8 @@
       const totalBudget = sumBy(summary, "총 사업비");
       const govFund = sumBy(summary, "정부지원금 (현금)");
       const privateFund = sumBy(summary, "총 민간부담금");
-      const deptData = groupSumBy(summary, "부처", "총 사업비");
       const typeData = groupSumBy(summary, "유형", "총 사업비");
+      const yearlyCost = groupYearlyCosts(detail);
 
       budgetLedgerGrid.innerHTML = `
         <div class="card" style="margin-bottom:16px;">
@@ -1338,26 +1338,33 @@
             <div class="ov-card"><div class="ov-card-badge">민간부담금 합계</div><div class="ov-card-name">${formatKrw(privateFund)}</div></div>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px;">
-          <div class="card"><h3 class="card-title">부처별 총 사업비</h3><canvas id="ledgerDeptChart" height="220"></canvas></div>
-          <div class="card"><h3 class="card-title">R&amp;D / 비R&amp;D 비중</h3><canvas id="ledgerTypeChart" height="220"></canvas></div>
-        </div>
-        <div class="card">
+        <div class="card" style="margin-bottom:16px;">
           <div id="ledgerBody"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px;">
+          <div class="card"><h3 class="card-title">연도별 비용 항목 합계 (원본데이터)</h3><canvas id="ledgerYearlyCostChart" height="220"></canvas></div>
+          <div class="card"><h3 class="card-title">R&amp;D / 비R&amp;D 비중</h3><canvas id="ledgerTypeChart" height="220"></canvas></div>
         </div>
       `;
 
-      if (ledgerDeptChart) { ledgerDeptChart.destroy(); ledgerDeptChart = null; }
-      const deptCtx = document.getElementById("ledgerDeptChart");
-      ledgerDeptChart = new Chart(deptCtx, {
+      if (ledgerYearlyCostChart) { ledgerYearlyCostChart.destroy(); ledgerYearlyCostChart = null; }
+      const yearlyCostCtx = document.getElementById("ledgerYearlyCostChart");
+      ledgerYearlyCostChart = new Chart(yearlyCostCtx, {
         type: "bar",
         data: {
-          labels: deptData.map(([k]) => k),
-          datasets: [{ label: "총 사업비", data: deptData.map(([, v]) => v), backgroundColor: "#4a66ff" }]
+          labels: yearlyCost.years.map(String),
+          datasets: yearlyCost.categories.map((cat, i) => ({
+            label: cat.label,
+            data: yearlyCost.years.map((y) => yearlyCost.map.get(y)[cat.key] || 0),
+            backgroundColor: cat.color
+          }))
         },
         options: {
-          plugins: { legend: { display: false } },
-          scales: { y: { ticks: { callback: (v) => Number(v).toLocaleString("ko-KR") } } }
+          plugins: { legend: { position: "bottom" } },
+          scales: {
+            x: { stacked: true },
+            y: { stacked: true, ticks: { callback: (v) => Number(v).toLocaleString("ko-KR") } }
+          }
         }
       });
 
