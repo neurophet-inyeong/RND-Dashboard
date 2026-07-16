@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import Iterable
 
@@ -11,13 +10,6 @@ import streamlit as st
 
 PROJECT_DIR = Path("projects")
 DEFAULT_SHEETS = ["개요", "사업비", "마일스톤", "정량지표", "정량지표상세"]
-
-LEDGER_PATH = Path(
-    os.environ.get(
-        "SHAREPOINT_LEDGER_PATH",
-        r"C:\Users\박인영(InyeongPark)\OneDrive - 뉴로핏 주식회사\R&D\00. 연구개발과제 관리대장\뉴로핏_연구과제_통합관리.xlsx",
-    )
-)
 
 
 @st.cache_data(show_spinner=False)
@@ -139,84 +131,6 @@ def format_krw(value: float) -> str:
     return f"{value:,.0f} 원"
 
 
-@st.cache_data(show_spinner=False)
-def load_ledger(path: str) -> tuple[pd.DataFrame, pd.DataFrame]:
-    summary = pd.read_excel(path, sheet_name="총괄표", header=0)
-    summary = summary[summary["부처"].astype(str) != "0"]
-    summary = summary.dropna(subset=["번호", "총 사업비"])
-    summary["번호"] = summary["번호"].astype(int)
-
-    detail = pd.read_excel(path, sheet_name="원본데이터", header=0)
-    detail = detail.dropna(subset=["시트명"])
-    detail["시트명"] = detail["시트명"].astype(int)
-
-    return summary, detail
-
-
-def render_budget_ledger() -> None:
-    st.subheader("전사 과제 예산 현황 (SharePoint 연동 · 총괄표/원본데이터)")
-
-    if not LEDGER_PATH.exists():
-        st.warning(
-            f"통합관리 파일을 찾을 수 없습니다: {LEDGER_PATH}\n"
-            "OneDrive 동기화 상태를 확인해주세요."
-        )
-        return
-
-    summary, detail = load_ledger(str(LEDGER_PATH))
-
-    total_budget = summary["총 사업비"].sum()
-    gov_fund = summary["정부지원금\n(현금)"].sum()
-    private_fund = summary["총 민간부담금"].sum()
-
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("전체 과제 수", f"{len(summary):,}")
-    c2.metric("총 사업비 합계", format_krw(total_budget))
-    c3.metric("정부지원금 합계", format_krw(gov_fund))
-    c4.metric("민간부담금 합계", format_krw(private_fund))
-
-    dept_summary = (
-        summary.groupby("부처", as_index=False)["총 사업비"]
-        .sum()
-        .sort_values("총 사업비", ascending=False)
-    )
-    dept_chart = px.bar(
-        dept_summary, x="부처", y="총 사업비", title="부처별 총 사업비", text_auto=True
-    )
-    dept_chart.update_layout(yaxis_title="원")
-    st.plotly_chart(dept_chart, use_container_width=True)
-
-    type_summary = summary.groupby("유형", as_index=False)["총 사업비"].sum()
-    type_chart = px.pie(
-        type_summary, names="유형", values="총 사업비", title="R&D / 비R&D 사업비 비중"
-    )
-    st.plotly_chart(type_chart, use_container_width=True)
-
-    st.markdown("### 과제별 상세 (총괄표 + 연차별 예산 breakdown)")
-
-    project_rows = summary.sort_values("번호")
-    label_map = {
-        int(row["번호"]): f"[{int(row['번호'])}] {row['사업명']}"
-        for _, row in project_rows.iterrows()
-    }
-    selected_num = st.selectbox(
-        "과제 선택", options=list(label_map.keys()), format_func=lambda n: label_map[n]
-    )
-
-    project_row = summary[summary["번호"] == selected_num].iloc[0]
-    st.dataframe(project_row.to_frame().T, use_container_width=True)
-
-    yearly = detail[detail["시트명"] == selected_num]
-    if yearly.empty:
-        st.info("이 과제의 연차별 상세 데이터(원본데이터)가 없습니다.")
-    else:
-        st.dataframe(yearly, use_container_width=True)
-        yearly_chart = px.bar(
-            yearly, x="단계-연차", y="합계", title="연차별 사업비 합계", text_auto=True
-        )
-        st.plotly_chart(yearly_chart, use_container_width=True)
-
-
 def render_overview(files: list[Path]) -> None:
     st.subheader("전체 프로젝트 성과 요약")
 
@@ -328,34 +242,27 @@ def render_sheet_explorer(file_path: Path, sheet_name: str) -> None:
 
 st.set_page_config(page_title="과제 성과지표 대시보드", layout="wide")
 st.title("과제별 성과지표 시각화 앱")
+st.caption("projects 폴더의 엑셀 파일을 자동 인식해 성과 데이터를 요약/시각화합니다.")
 
-tab_projects, tab_budget = st.tabs(["과제별 성과지표", "예산 현황 (전사 통합관리)"])
+if not PROJECT_DIR.exists():
+    st.error("projects 폴더가 존재하지 않습니다. 워크스페이스 루트에 projects 폴더를 만들어주세요.")
+    st.stop()
 
-with tab_projects:
-    st.caption("projects 폴더의 엑셀 파일을 자동 인식해 성과 데이터를 요약/시각화합니다.")
+excel_files = list_excel_files(PROJECT_DIR)
+if not excel_files:
+    st.warning("projects 폴더에 엑셀 파일(.xlsx/.xls/.xlsm)이 없습니다.")
+    st.stop()
 
-    if not PROJECT_DIR.exists():
-        st.error("projects 폴더가 존재하지 않습니다. 워크스페이스 루트에 projects 폴더를 만들어주세요.")
-    else:
-        excel_files = list_excel_files(PROJECT_DIR)
-        if not excel_files:
-            st.warning("projects 폴더에 엑셀 파일(.xlsx/.xls/.xlsm)이 없습니다.")
-        else:
-            render_overview(excel_files)
+render_overview(excel_files)
 
-            st.divider()
+st.divider()
 
-            selected_file = st.selectbox(
-                "프로젝트 파일 선택", options=excel_files, format_func=lambda p: p.name
-            )
+selected_file = st.selectbox("프로젝트 파일 선택", options=excel_files, format_func=lambda p: p.name)
 
-            available_sheets = pd.ExcelFile(str(selected_file)).sheet_names
-            sheet_options = [s for s in DEFAULT_SHEETS if s in available_sheets]
-            extra_sheets = [s for s in available_sheets if s not in sheet_options]
-            sheet_options.extend(extra_sheets)
+available_sheets = pd.ExcelFile(str(selected_file)).sheet_names
+sheet_options = [s for s in DEFAULT_SHEETS if s in available_sheets]
+extra_sheets = [s for s in available_sheets if s not in sheet_options]
+sheet_options.extend(extra_sheets)
 
-            selected_sheet = st.selectbox("시트 선택", options=sheet_options)
-            render_sheet_explorer(selected_file, selected_sheet)
-
-with tab_budget:
-    render_budget_ledger()
+selected_sheet = st.selectbox("시트 선택", options=sheet_options)
+render_sheet_explorer(selected_file, selected_sheet)
