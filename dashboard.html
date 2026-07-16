@@ -1174,19 +1174,89 @@
       return state.ledger;
     }
 
-    function renderLedgerProjectDetail(summary, detail) {
+    const LEDGER_TABLE_COLUMNS = [
+      { key: "번호", label: "번호" },
+      { key: "유형", label: "유형" },
+      { key: "부처", label: "부처" },
+      { key: "사업명", label: "사업명" },
+      { key: "과제명", label: "과제명" },
+      { key: "총 수행기간", label: "총 수행기간" },
+      { key: "총 사업비", label: "총 사업비", money: true }
+    ];
+
+    function renderLedgerBody(summary, detail) {
+      const body = document.getElementById("ledgerBody");
+      if (!body) return;
+
+      if (state.ledgerMode === "detail" && state.ledgerSelectedNum != null && summary.some((r) => Number(r["번호"]) === state.ledgerSelectedNum)) {
+        renderLedgerDetailView(body, summary, detail);
+      } else {
+        state.ledgerMode = "table";
+        renderLedgerTableView(body, summary, detail);
+      }
+    }
+
+    function renderLedgerTableView(body, summary, detail) {
+      if (ledgerYearChart) { ledgerYearChart.destroy(); ledgerYearChart = null; }
+
+      const sorted = summary.slice().sort((a, b) => Number(a["번호"]) - Number(b["번호"]));
+      const thead = `<thead><tr>${LEDGER_TABLE_COLUMNS.map((c) => `<th>${c.label}</th>`).join("")}</tr></thead>`;
+      const tbody = `<tbody>${sorted
+        .map((row) => {
+          const cells = LEDGER_TABLE_COLUMNS.map((c) => {
+            const raw = row[c.key];
+            const text = c.money ? formatKrw(raw) : String(raw ?? "");
+            if (c.key === "과제명") {
+              return `<td><a href="#" class="ledger-open-detail" data-num="${row["번호"]}" style="color:var(--accent);font-weight:700;text-decoration:none;">${text || "(과제명 미입력)"}</a></td>`;
+            }
+            return `<td>${text}</td>`;
+          }).join("");
+          return `<tr class="ov-row" data-num="${row["번호"]}">${cells}</tr>`;
+        })
+        .join("")}</tbody>`;
+
+      body.innerHTML = `<h3 class="card-title">과제별 상세 (총괄표 + 연차별 예산 breakdown)</h3>
+        <p class="hint">과제명을 클릭하면 상세로 이동합니다.</p>
+        <div class="table-wrap" style="max-height:520px;">
+          <table class="sheet-table ov-table">${thead}${tbody}</table>
+        </div>`;
+
+      const openDetail = (num) => {
+        state.ledgerSelectedNum = num;
+        state.ledgerMode = "detail";
+        renderLedgerBody(summary, detail);
+      };
+
+      body.querySelectorAll("tr.ov-row").forEach((tr) => {
+        tr.style.cursor = "pointer";
+        tr.addEventListener("click", (e) => {
+          if (e.target.closest("a.ledger-open-detail")) return; // 링크 클릭은 자체 핸들러가 처리
+          openDetail(Number(tr.dataset.num));
+        });
+      });
+      body.querySelectorAll("a.ledger-open-detail").forEach((a) => {
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          openDetail(Number(a.dataset.num));
+        });
+      });
+    }
+
+    function renderLedgerDetailView(body, summary, detail) {
       const num = state.ledgerSelectedNum;
       const row = summary.find((r) => Number(r["번호"]) === num);
-      const detailWrap = document.getElementById("ledgerProjectDetail");
-      const yearlyWrap = document.getElementById("ledgerYearlyWrap");
-      if (!row || !detailWrap || !yearlyWrap) return;
+      if (!row) {
+        state.ledgerMode = "table";
+        renderLedgerTableView(body, summary, detail);
+        return;
+      }
 
       const fields = [
         "유형", "부처", "전문기관", "사업명", "과제명", "과제번호",
         "주관/공동(책임자)", "총 수행기간", "총 사업비", "정부지원금 (현금)", "총 민간부담금"
       ];
       const moneyFields = new Set(["총 사업비", "정부지원금 (현금)", "총 민간부담금"]);
-      detailWrap.innerHTML = `<table class="overview-table"><tbody>${fields
+      const detailTableHtml = `<table class="overview-table"><tbody>${fields
         .map((f) => {
           const text = moneyFields.has(f) ? formatKrw(row[f]) : String(row[f] ?? "");
           return `<tr><th>${f}</th><td colspan="3">${text}</td></tr>`;
@@ -1194,35 +1264,43 @@
         .join("")}</tbody></table>`;
 
       const yearly = detail.filter((r) => Number(r["시트명"]) === num);
-      if (ledgerYearChart) { ledgerYearChart.destroy(); ledgerYearChart = null; }
+      const yearlyHtml = yearly.length
+        ? `<h3 class="card-title" style="margin-top:14px;">연차별 사업비</h3>
+           <canvas id="ledgerYearChart" height="180"></canvas>
+           <div class="table-wrap" style="margin-top:10px;">${buildSheetTableHtml(yearly, "사업비")}</div>`
+        : `<p class="hint" style="margin-top:14px;">이 과제의 연차별 상세 데이터(원본데이터)가 없습니다.</p>`;
 
-      if (!yearly.length) {
-        yearlyWrap.innerHTML = `<p class="hint">이 과제의 연차별 상세 데이터(원본데이터)가 없습니다.</p>`;
-        return;
-      }
-
-      yearlyWrap.innerHTML = `
-        <h3 class="card-title" style="margin-top:14px;">연차별 사업비</h3>
-        <canvas id="ledgerYearChart" height="180"></canvas>
-        <div class="table-wrap" style="margin-top:10px;">${buildSheetTableHtml(yearly, "사업비")}</div>
+      body.innerHTML = `
+        <button id="ledgerBackBtn" type="button" class="refresh-btn" style="margin-bottom:14px;">← 목록으로</button>
+        <h3 class="card-title">[${row["번호"]}] ${row["사업명"] ?? ""}</h3>
+        ${detailTableHtml}
+        ${yearlyHtml}
       `;
 
-      const yearCtx = document.getElementById("ledgerYearChart");
-      ledgerYearChart = new Chart(yearCtx, {
-        type: "bar",
-        data: {
-          labels: yearly.map((r) => String(r["단계-연차"] ?? "")),
-          datasets: [{
-            label: "합계",
-            data: yearly.map((r) => parseNumericLike(r["합계"]) || 0),
-            backgroundColor: "#27ae6f"
-          }]
-        },
-        options: {
-          plugins: { legend: { display: false } },
-          scales: { y: { ticks: { callback: (v) => Number(v).toLocaleString("ko-KR") } } }
-        }
+      document.getElementById("ledgerBackBtn").addEventListener("click", () => {
+        state.ledgerMode = "table";
+        renderLedgerBody(summary, detail);
       });
+
+      if (ledgerYearChart) { ledgerYearChart.destroy(); ledgerYearChart = null; }
+      if (yearly.length) {
+        const yearCtx = document.getElementById("ledgerYearChart");
+        ledgerYearChart = new Chart(yearCtx, {
+          type: "bar",
+          data: {
+            labels: yearly.map((r) => String(r["단계-연차"] ?? "")),
+            datasets: [{
+              label: "합계",
+              data: yearly.map((r) => parseNumericLike(r["합계"]) || 0),
+              backgroundColor: "#27ae6f"
+            }]
+          },
+          options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { ticks: { callback: (v) => Number(v).toLocaleString("ko-KR") } } }
+          }
+        });
+      }
     }
 
     async function renderBudgetLedger() {
