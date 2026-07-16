@@ -2449,6 +2449,7 @@
     function init() {
       baseDate.value = formatDateToday();
       bindEvents();
+      switchView("budgetLedger");
       checkReloadToken();
       setInterval(checkReloadToken, 3000);
       if (location.protocol === "file:") {
