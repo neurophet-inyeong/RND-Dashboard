@@ -1183,7 +1183,9 @@
       { key: "간접비", label: "간접비", color: "#4dbfc7" }
     ];
 
-    // 원본데이터의 시작일 연도 기준으로 비용 항목(인건비/연구활동비 등)을 합산
+    const LEDGER_GOV_FUND_KEY = "정부지원금 (현금)";
+
+    // 원본데이터의 시작일 연도 기준으로 비용 항목(인건비/연구활동비 등) + 정부지원금을 합산
     function groupYearlyCosts(detailRows) {
       const byYear = new Map();
       for (const r of detailRows) {
@@ -1195,6 +1197,7 @@
         for (const cat of LEDGER_COST_CATEGORIES) {
           bucket[cat.key] = (bucket[cat.key] || 0) + (parseNumericLike(r[cat.key]) || 0);
         }
+        bucket[LEDGER_GOV_FUND_KEY] = (bucket[LEDGER_GOV_FUND_KEY] || 0) + (parseNumericLike(r[LEDGER_GOV_FUND_KEY]) || 0);
       }
       const years = [...byYear.keys()].sort((a, b) => a - b);
       return { years, categories: LEDGER_COST_CATEGORIES, map: byYear };
