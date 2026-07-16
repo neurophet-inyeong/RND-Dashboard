@@ -1227,16 +1227,16 @@
       if (ledgerYearChart) { ledgerYearChart.destroy(); ledgerYearChart = null; }
 
       const sorted = summary.slice().sort((a, b) => Number(a["번호"]) - Number(b["번호"]));
-      const thead = `<thead><tr>${LEDGER_TABLE_COLUMNS.map((c) => `<th>${c.label}</th>`).join("")}</tr></thead>`;
+      const thead = `<thead><tr>${LEDGER_TABLE_COLUMNS.map((c) => `<th class="${c.cls || ""}">${c.label}</th>`).join("")}</tr></thead>`;
       const tbody = `<tbody>${sorted
         .map((row) => {
           const cells = LEDGER_TABLE_COLUMNS.map((c) => {
             const raw = row[c.key];
             const text = c.money ? formatKrw(raw) : String(raw ?? "");
             if (c.key === "과제명") {
-              return `<td><a href="#" class="ledger-open-detail" data-num="${row["번호"]}" style="color:var(--accent);font-weight:700;text-decoration:none;">${text || "(과제명 미입력)"}</a></td>`;
+              return `<td class="${c.cls || ""}"><a href="#" class="ledger-open-detail" data-num="${row["번호"]}" style="color:var(--accent);font-weight:700;text-decoration:none;">${text || "(과제명 미입력)"}</a></td>`;
             }
-            return `<td>${text}</td>`;
+            return `<td class="${c.cls || ""}">${text}</td>`;
           }).join("");
           return `<tr class="ov-row" data-num="${row["번호"]}">${cells}</tr>`;
         })
@@ -1245,7 +1245,7 @@
       body.innerHTML = `<h3 class="card-title">과제별 상세 (총괄표 + 연차별 예산 breakdown)</h3>
         <p class="hint">과제명을 클릭하면 상세로 이동합니다.</p>
         <div class="table-wrap" style="max-height:520px;">
-          <table class="sheet-table ov-table">${thead}${tbody}</table>
+          <table class="sheet-table ledger-table">${thead}${tbody}</table>
         </div>`;
 
       const openDetail = (num) => {
