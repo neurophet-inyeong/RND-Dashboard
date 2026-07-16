@@ -1172,8 +1172,6 @@
     }
 
     function renderLedgerTableView(body, summary, detail) {
-      if (ledgerYearChart) { ledgerYearChart.destroy(); ledgerYearChart = null; }
-
       const sorted = summary.slice().sort((a, b) => Number(a["번호"]) - Number(b["번호"]));
       const thead = `<thead><tr>${LEDGER_TABLE_COLUMNS.map((c) => `<th class="${c.cls || ""}">${c.label}</th>`).join("")}</tr></thead>`;
       const tbody = `<tbody>${sorted
