@@ -1282,9 +1282,9 @@
 
       function renderTbody() {
         const filtered = sorted.filter((row) => LEDGER_TABLE_COLUMNS.every((c) => {
-          const f = (state.ledgerFilters[c.key] || "").trim().toLowerCase();
+          const f = state.ledgerFilters[c.key] || "";
           if (!f) return true;
-          return ledgerCellText(row, c).toLowerCase().includes(f);
+          return ledgerCellText(row, c) === f;
         }));
 
         const tbodyEl = document.getElementById("ledgerTableBody");
