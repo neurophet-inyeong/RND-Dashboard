@@ -1123,6 +1123,196 @@
       allOverviewGrid.appendChild(wrap);
     }
 
+    // ── 총괄표(예산 현황) ────────────────────────────────────────────────
+    function formatKrw(value) {
+      const num = Number(value) || 0;
+      return `${Math.round(num).toLocaleString("ko-KR")} 원`;
+    }
+
+    function loadLedgerSheetRows(workbook, sheetName) {
+      const ws = workbook.Sheets[sheetName];
+      if (!ws) return [];
+      const matrix = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+      return parseMatrixToRows(matrix);
+    }
+
+    function sumBy(rows, key) {
+      return rows.reduce((acc, r) => acc + (parseNumericLike(r[key]) || 0), 0);
+    }
+
+    function groupSumBy(rows, groupKey, valueKey) {
+      const map = new Map();
+      for (const r of rows) {
+        const g = String(r[groupKey] ?? "").trim() || "미지정";
+        map.set(g, (map.get(g) || 0) + (parseNumericLike(r[valueKey]) || 0));
+      }
+      return [...map.entries()].sort((a, b) => b[1] - a[1]);
+    }
+
+    async function loadLedgerData() {
+      if (state.ledger) return state.ledger;
+
+      const resp = await fetch(LEDGER_PATH, { cache: "no-store" });
+      if (!resp.ok) {
+        throw new Error(
+          "총괄표 파일을 찾을 수 없습니다 (ledger/총괄표_원본데이터.xlsx). sync_ledger.py가 실행 중인지 확인해주세요."
+        );
+      }
+      const data = await resp.arrayBuffer();
+      const wb = XLSX.read(data, { type: "array" });
+
+      const summaryAll = loadLedgerSheetRows(wb, "총괄표");
+      const summary = summaryAll.filter((r) => {
+        const dept = String(r["부처"] ?? "").trim();
+        return dept && dept !== "0" && r["총 사업비"] != null;
+      });
+
+      const detailAll = loadLedgerSheetRows(wb, "원본데이터");
+      const detail = detailAll.filter((r) => r["시트명"] != null);
+
+      state.ledger = { summary, detail };
+      return state.ledger;
+    }
+
+    function renderLedgerProjectDetail(summary, detail) {
+      const num = state.ledgerSelectedNum;
+      const row = summary.find((r) => Number(r["번호"]) === num);
+      const detailWrap = document.getElementById("ledgerProjectDetail");
+      const yearlyWrap = document.getElementById("ledgerYearlyWrap");
+      if (!row || !detailWrap || !yearlyWrap) return;
+
+      const fields = [
+        "유형", "부처", "전문기관", "사업명", "과제명", "과제번호",
+        "주관/공동(책임자)", "총 수행기간", "총 사업비", "정부지원금 (현금)", "총 민간부담금"
+      ];
+      const moneyFields = new Set(["총 사업비", "정부지원금 (현금)", "총 민간부담금"]);
+      detailWrap.innerHTML = `<table class="overview-table"><tbody>${fields
+        .map((f) => {
+          const text = moneyFields.has(f) ? formatKrw(row[f]) : String(row[f] ?? "");
+          return `<tr><th>${f}</th><td colspan="3">${text}</td></tr>`;
+        })
+        .join("")}</tbody></table>`;
+
+      const yearly = detail.filter((r) => Number(r["시트명"]) === num);
+      if (ledgerYearChart) { ledgerYearChart.destroy(); ledgerYearChart = null; }
+
+      if (!yearly.length) {
+        yearlyWrap.innerHTML = `<p class="hint">이 과제의 연차별 상세 데이터(원본데이터)가 없습니다.</p>`;
+        return;
+      }
+
+      yearlyWrap.innerHTML = `
+        <h3 class="card-title" style="margin-top:14px;">연차별 사업비</h3>
+        <canvas id="ledgerYearChart" height="180"></canvas>
+        <div class="table-wrap" style="margin-top:10px;">${buildSheetTableHtml(yearly, "사업비")}</div>
+      `;
+
+      const yearCtx = document.getElementById("ledgerYearChart");
+      ledgerYearChart = new Chart(yearCtx, {
+        type: "bar",
+        data: {
+          labels: yearly.map((r) => String(r["단계-연차"] ?? "")),
+          datasets: [{
+            label: "합계",
+            data: yearly.map((r) => parseNumericLike(r["합계"]) || 0),
+            backgroundColor: "#27ae6f"
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: { y: { ticks: { callback: (v) => Number(v).toLocaleString("ko-KR") } } }
+        }
+      });
+    }
+
+    async function renderBudgetLedger() {
+      if (state.view !== "budgetLedger") return;
+      budgetLedgerGrid.innerHTML = `<p style="color:var(--muted)">불러오는 중...</p>`;
+
+      let ledger;
+      try {
+        ledger = await loadLedgerData();
+      } catch (err) {
+        budgetLedgerGrid.innerHTML = `<div class="warn" style="display:block">${err.message}</div>`;
+        return;
+      }
+
+      const { summary, detail } = ledger;
+      if (!summary.length) {
+        budgetLedgerGrid.innerHTML = `<p style="color:var(--muted)">총괄표에서 유효한 과제 데이터를 찾지 못했습니다.</p>`;
+        return;
+      }
+
+      const totalBudget = sumBy(summary, "총 사업비");
+      const govFund = sumBy(summary, "정부지원금 (현금)");
+      const privateFund = sumBy(summary, "총 민간부담금");
+      const deptData = groupSumBy(summary, "부처", "총 사업비");
+      const typeData = groupSumBy(summary, "유형", "총 사업비");
+
+      const sortedSummary = summary.slice().sort((a, b) => Number(a["번호"]) - Number(b["번호"]));
+      if (!state.ledgerSelectedNum || !summary.some((r) => Number(r["번호"]) === state.ledgerSelectedNum)) {
+        state.ledgerSelectedNum = Number(sortedSummary[0]["번호"]);
+      }
+
+      budgetLedgerGrid.innerHTML = `
+        <div class="card" style="margin-bottom:16px;">
+          <h2 class="card-title">전사 과제 예산 현황 (SharePoint 연동 · 총괄표/원본데이터)</h2>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:10px;">
+            <div class="ov-card"><div class="ov-card-badge">전체 과제 수</div><div class="ov-card-name">${summary.length.toLocaleString("ko-KR")}건</div></div>
+            <div class="ov-card"><div class="ov-card-badge">총 사업비 합계</div><div class="ov-card-name">${formatKrw(totalBudget)}</div></div>
+            <div class="ov-card"><div class="ov-card-badge">정부지원금 합계</div><div class="ov-card-name">${formatKrw(govFund)}</div></div>
+            <div class="ov-card"><div class="ov-card-badge">민간부담금 합계</div><div class="ov-card-name">${formatKrw(privateFund)}</div></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px;">
+          <div class="card"><h3 class="card-title">부처별 총 사업비</h3><canvas id="ledgerDeptChart" height="220"></canvas></div>
+          <div class="card"><h3 class="card-title">R&amp;D / 비R&amp;D 비중</h3><canvas id="ledgerTypeChart" height="220"></canvas></div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">과제별 상세 (총괄표 + 연차별 예산 breakdown)</h3>
+          <select id="ledgerProjectSelect" style="margin-bottom:12px;padding:8px;border-radius:8px;border:1px solid #d3d9e5;min-width:320px;"></select>
+          <div id="ledgerProjectDetail"></div>
+          <div id="ledgerYearlyWrap" style="margin-top:14px;"></div>
+        </div>
+      `;
+
+      if (ledgerDeptChart) { ledgerDeptChart.destroy(); ledgerDeptChart = null; }
+      const deptCtx = document.getElementById("ledgerDeptChart");
+      ledgerDeptChart = new Chart(deptCtx, {
+        type: "bar",
+        data: {
+          labels: deptData.map(([k]) => k),
+          datasets: [{ label: "총 사업비", data: deptData.map(([, v]) => v), backgroundColor: "#4a66ff" }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: { y: { ticks: { callback: (v) => Number(v).toLocaleString("ko-KR") } } }
+        }
+      });
+
+      if (ledgerTypeChart) { ledgerTypeChart.destroy(); ledgerTypeChart = null; }
+      const typeCtx = document.getElementById("ledgerTypeChart");
+      ledgerTypeChart = new Chart(typeCtx, {
+        type: "pie",
+        data: {
+          labels: typeData.map(([k]) => k),
+          datasets: [{ data: typeData.map(([, v]) => v), backgroundColor: ["#4a66ff", "#27ae6f", "#f1a94d", "#e0763f"] }]
+        }
+      });
+
+      const select = document.getElementById("ledgerProjectSelect");
+      select.innerHTML = sortedSummary
+        .map((r) => `<option value="${r["번호"]}">[${r["번호"]}] ${r["사업명"] ?? ""}</option>`)
+        .join("");
+      select.value = String(state.ledgerSelectedNum);
+      select.addEventListener("change", () => {
+        state.ledgerSelectedNum = Number(select.value);
+        renderLedgerProjectDetail(summary, detail);
+      });
+
+      renderLedgerProjectDetail(summary, detail);
+    }
+
     function switchView(view) {
       state.view = view;
       const mainEl = document.querySelector(".main");
