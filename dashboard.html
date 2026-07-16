@@ -1223,9 +1223,18 @@
       { key: "유형", label: "유형" },
       { key: "사업명", label: "사업명" },
       { key: "과제명", label: "과제명" },
+      { key: "과제번호", label: "과제번호" },
       { key: "총 수행기간", label: "총 수행기간" },
       { key: "총 사업비", label: "총 사업비", money: true }
     ];
+
+    // 총괄표의 과제번호가 projects/ 폴더의 엑셀 파일명(state.projects[].name)과 일치하면 해당 프로젝트로 이동
+    function findMatchingLedgerProject(taskNumber) {
+      const num = String(taskNumber ?? "").trim();
+      if (!num) return null;
+      const match = state.projects.find((p) => p.name === num);
+      return match ? match.name : null;
+    }
 
     function renderLedgerBody(summary, detail) {
       const body = document.getElementById("ledgerBody");
