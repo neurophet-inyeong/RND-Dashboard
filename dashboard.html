@@ -1228,17 +1228,38 @@
       }
     }
 
+    function getLedgerColumnOptions(rows, col) {
+      const seen = new Map(); // text -> 정렬용 raw 값
+      rows.forEach((row) => {
+        const text = ledgerCellText(row, col);
+        if (!text || seen.has(text)) return;
+        const raw = col.compute ? col.compute(row) : row[col.key];
+        seen.set(text, col.money ? (parseNumericLike(raw) || 0) : text);
+      });
+      return [...seen.entries()]
+        .sort((a, b) => (col.money ? a[1] - b[1] : String(a[1]).localeCompare(String(b[1]), "ko")))
+        .map(([text]) => text);
+    }
+
     function renderLedgerTableView(body, summary, detail) {
       const sorted = summary.slice().sort((a, b) => Number(a["번호"]) - Number(b["번호"]));
 
       const theadLabelRow = `<tr>${LEDGER_TABLE_COLUMNS.map((c) => `<th class="${c.cls || ""}">${c.label}</th>`).join("")}</tr>`;
-      const theadFilterRow = `<tr class="ledger-filter-row">${LEDGER_TABLE_COLUMNS.map((c) => `
-        <th class="${c.cls || ""}">
-          <input type="text" class="ledger-filter-input" data-key="${c.key}" placeholder="필터" value="${(state.ledgerFilters[c.key] || "").replace(/"/g, "&quot;")}" />
-        </th>`).join("")}</tr>`;
+      const theadFilterRow = `<tr class="ledger-filter-row">${LEDGER_TABLE_COLUMNS.map((c) => {
+        const current = state.ledgerFilters[c.key] || "";
+        const optionsHtml = getLedgerColumnOptions(sorted, c)
+          .map((v) => `<option value="${v.replace(/"/g, "&quot;")}"${v === current ? " selected" : ""}>${v}</option>`)
+          .join("");
+        return `<th class="${c.cls || ""}">
+          <select class="ledger-filter-select" data-key="${c.key}">
+            <option value="">전체</option>
+            ${optionsHtml}
+          </select>
+        </th>`;
+      }).join("")}</tr>`;
 
       body.innerHTML = `<h3 class="card-title">과제별 상세 (총괄표 + 연차별 예산 breakdown)</h3>
-        <p class="hint">과제명을 클릭하면 상세로 이동합니다. 과제번호(📄)가 있으면 클릭 시 과제 시트로 이동합니다. 각 열 상단 입력칸으로 필터링할 수 있습니다.</p>
+        <p class="hint">과제명을 클릭하면 상세로 이동합니다. 과제번호(📄)가 있으면 클릭 시 과제 시트로 이동합니다. 각 열 상단 드롭다운으로 필터링할 수 있습니다.</p>
         <div class="table-wrap" style="max-height:520px;">
           <table class="sheet-table ledger-table">
             <thead>${theadLabelRow}${theadFilterRow}</thead>
