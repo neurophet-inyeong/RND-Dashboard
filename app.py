@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Iterable
 
@@ -10,6 +11,13 @@ import streamlit as st
 
 PROJECT_DIR = Path("projects")
 DEFAULT_SHEETS = ["개요", "사업비", "마일스톤", "정량지표", "정량지표상세"]
+
+LEDGER_PATH = Path(
+    os.environ.get(
+        "SHAREPOINT_LEDGER_PATH",
+        r"C:\Users\박인영(InyeongPark)\OneDrive - 뉴로핏 주식회사\R&D\00. 연구개발과제 관리대장\뉴로핏_연구과제_통합관리.xlsx",
+    )
+)
 
 
 @st.cache_data(show_spinner=False)
