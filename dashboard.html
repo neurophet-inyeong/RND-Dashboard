@@ -1261,6 +1261,13 @@
             if (c.key === "과제명") {
               return `<td class="${c.cls || ""}"><a href="#" class="ledger-open-detail" data-num="${row["번호"]}" style="color:var(--accent);font-weight:700;text-decoration:none;">${text || "(과제명 미입력)"}</a></td>`;
             }
+            if (c.key === "과제번호") {
+              const matchName = findMatchingLedgerProject(raw);
+              if (matchName) {
+                return `<td class="${c.cls || ""}"><a href="#" class="ledger-open-project" data-project="${matchName}" style="color:#137a2c;font-weight:700;text-decoration:none;" title="과제 시트로 이동">${text} 📄</a></td>`;
+              }
+              return `<td class="${c.cls || ""}">${text}</td>`;
+            }
             return `<td class="${c.cls || ""}">${text}</td>`;
           }).join("");
           return `<tr class="ov-row" data-num="${row["번호"]}">${cells}</tr>`;
@@ -1268,7 +1275,7 @@
         .join("")}</tbody>`;
 
       body.innerHTML = `<h3 class="card-title">과제별 상세 (총괄표 + 연차별 예산 breakdown)</h3>
-        <p class="hint">과제명을 클릭하면 상세로 이동합니다.</p>
+        <p class="hint">과제명을 클릭하면 상세로 이동합니다. 과제번호(📄)가 있으면 클릭 시 과제 시트로 이동합니다.</p>
         <div class="table-wrap" style="max-height:520px;">
           <table class="sheet-table ledger-table">${thead}${tbody}</table>
         </div>`;
@@ -1279,10 +1286,17 @@
         renderLedgerBody(summary, detail);
       };
 
+      const openProjectSheet = (projectName) => {
+        state.activeProject = projectName;
+        switchView("project");
+        renderProjectMenu();
+        renderDashboard();
+      };
+
       body.querySelectorAll("tr.ov-row").forEach((tr) => {
         tr.style.cursor = "pointer";
         tr.addEventListener("click", (e) => {
-          if (e.target.closest("a.ledger-open-detail")) return; // 링크 클릭은 자체 핸들러가 처리
+          if (e.target.closest("a.ledger-open-detail, a.ledger-open-project")) return; // 링크 클릭은 자체 핸들러가 처리
           openDetail(Number(tr.dataset.num));
         });
       });
@@ -1290,6 +1304,13 @@
         a.addEventListener("click", (e) => {
           e.preventDefault();
           openDetail(Number(a.dataset.num));
+        });
+      });
+      body.querySelectorAll("a.ledger-open-project").forEach((a) => {
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openProjectSheet(a.dataset.project);
         });
       });
     }
