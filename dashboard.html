@@ -1164,15 +1164,6 @@
       return rows.reduce((acc, r) => acc + (parseNumericLike(r[key]) || 0), 0);
     }
 
-    function groupSumBy(rows, groupKey, valueKey) {
-      const map = new Map();
-      for (const r of rows) {
-        const g = String(r[groupKey] ?? "").trim() || "미지정";
-        map.set(g, (map.get(g) || 0) + (parseNumericLike(r[valueKey]) || 0));
-      }
-      return [...map.entries()].sort((a, b) => b[1] - a[1]);
-    }
-
     const LEDGER_COST_CATEGORIES = [
       { key: "인건비", label: "인건비", color: "#4a66ff" },
       { key: "연구활동비", label: "연구활동비", color: "#27ae6f" },
