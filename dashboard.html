@@ -1466,16 +1466,6 @@
         }
       });
 
-      if (ledgerTypeChart) { ledgerTypeChart.destroy(); ledgerTypeChart = null; }
-      const typeCtx = document.getElementById("ledgerTypeChart");
-      ledgerTypeChart = new Chart(typeCtx, {
-        type: "pie",
-        data: {
-          labels: typeData.map(([k]) => k),
-          datasets: [{ data: typeData.map(([, v]) => v), backgroundColor: ["#4a66ff", "#27ae6f", "#f1a94d", "#e0763f"] }]
-        }
-      });
-
       renderLedgerBody(summary, detail);
     }
 
