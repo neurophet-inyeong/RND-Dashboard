@@ -1377,7 +1377,6 @@
       const totalBudget = sumBy(summary, "총 사업비");
       const govFund = sumBy(summary, "정부지원금 (현금)");
       const privateFund = sumBy(summary, "총 민간부담금");
-      const typeData = groupSumBy(summary, "유형", "총 사업비");
       const yearlyCost = groupYearlyCosts(detail);
 
       budgetLedgerGrid.innerHTML = `
@@ -1393,9 +1392,9 @@
         <div class="card" style="margin-bottom:16px;">
           <div id="ledgerBody"></div>
         </div>
-        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px;">
-          <div class="card"><h3 class="card-title">연도별 비용 항목 합계 (원본데이터)</h3><canvas id="ledgerYearlyCostChart" height="220"></canvas></div>
-          <div class="card"><h3 class="card-title">R&amp;D / 비R&amp;D 비중</h3><canvas id="ledgerTypeChart" height="220"></canvas></div>
+        <div class="card" style="margin-bottom:16px;">
+          <h3 class="card-title">연도별 비용 항목 합계 (원본데이터)</h3>
+          <canvas id="ledgerYearlyCostChart" height="220"></canvas>
         </div>
       `;
 
