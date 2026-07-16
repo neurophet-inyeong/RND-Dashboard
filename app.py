@@ -328,27 +328,34 @@ def render_sheet_explorer(file_path: Path, sheet_name: str) -> None:
 
 st.set_page_config(page_title="과제 성과지표 대시보드", layout="wide")
 st.title("과제별 성과지표 시각화 앱")
-st.caption("projects 폴더의 엑셀 파일을 자동 인식해 성과 데이터를 요약/시각화합니다.")
 
-if not PROJECT_DIR.exists():
-    st.error("projects 폴더가 존재하지 않습니다. 워크스페이스 루트에 projects 폴더를 만들어주세요.")
-    st.stop()
+tab_projects, tab_budget = st.tabs(["과제별 성과지표", "예산 현황 (전사 통합관리)"])
 
-excel_files = list_excel_files(PROJECT_DIR)
-if not excel_files:
-    st.warning("projects 폴더에 엑셀 파일(.xlsx/.xls/.xlsm)이 없습니다.")
-    st.stop()
+with tab_projects:
+    st.caption("projects 폴더의 엑셀 파일을 자동 인식해 성과 데이터를 요약/시각화합니다.")
 
-render_overview(excel_files)
+    if not PROJECT_DIR.exists():
+        st.error("projects 폴더가 존재하지 않습니다. 워크스페이스 루트에 projects 폴더를 만들어주세요.")
+    else:
+        excel_files = list_excel_files(PROJECT_DIR)
+        if not excel_files:
+            st.warning("projects 폴더에 엑셀 파일(.xlsx/.xls/.xlsm)이 없습니다.")
+        else:
+            render_overview(excel_files)
 
-st.divider()
+            st.divider()
 
-selected_file = st.selectbox("프로젝트 파일 선택", options=excel_files, format_func=lambda p: p.name)
+            selected_file = st.selectbox(
+                "프로젝트 파일 선택", options=excel_files, format_func=lambda p: p.name
+            )
 
-available_sheets = pd.ExcelFile(str(selected_file)).sheet_names
-sheet_options = [s for s in DEFAULT_SHEETS if s in available_sheets]
-extra_sheets = [s for s in available_sheets if s not in sheet_options]
-sheet_options.extend(extra_sheets)
+            available_sheets = pd.ExcelFile(str(selected_file)).sheet_names
+            sheet_options = [s for s in DEFAULT_SHEETS if s in available_sheets]
+            extra_sheets = [s for s in available_sheets if s not in sheet_options]
+            sheet_options.extend(extra_sheets)
 
-selected_sheet = st.selectbox("시트 선택", options=sheet_options)
-render_sheet_explorer(selected_file, selected_sheet)
+            selected_sheet = st.selectbox("시트 선택", options=sheet_options)
+            render_sheet_explorer(selected_file, selected_sheet)
+
+with tab_budget:
+    render_budget_ledger()
