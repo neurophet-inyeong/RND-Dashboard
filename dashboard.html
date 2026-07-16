@@ -1327,11 +1327,6 @@
       const deptData = groupSumBy(summary, "부처", "총 사업비");
       const typeData = groupSumBy(summary, "유형", "총 사업비");
 
-      const sortedSummary = summary.slice().sort((a, b) => Number(a["번호"]) - Number(b["번호"]));
-      if (!state.ledgerSelectedNum || !summary.some((r) => Number(r["번호"]) === state.ledgerSelectedNum)) {
-        state.ledgerSelectedNum = Number(sortedSummary[0]["번호"]);
-      }
-
       budgetLedgerGrid.innerHTML = `
         <div class="card" style="margin-bottom:16px;">
           <h2 class="card-title">전사 과제 예산 현황 (SharePoint 연동 · 총괄표/원본데이터)</h2>
