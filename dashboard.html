@@ -1262,7 +1262,6 @@
       const yearly = detail.filter((r) => Number(r["시트명"]) === num);
       const yearlyHtml = yearly.length
         ? `<h3 class="card-title" style="margin-top:14px;">연차별 사업비</h3>
-           <canvas id="ledgerYearChart" height="180"></canvas>
            <div class="table-wrap" style="margin-top:10px;">${buildSheetTableHtml(yearly, "사업비")}</div>`
         : `<p class="hint" style="margin-top:14px;">이 과제의 연차별 상세 데이터(원본데이터)가 없습니다.</p>`;
 
@@ -1277,26 +1276,6 @@
         state.ledgerMode = "table";
         renderLedgerBody(summary, detail);
       });
-
-      if (ledgerYearChart) { ledgerYearChart.destroy(); ledgerYearChart = null; }
-      if (yearly.length) {
-        const yearCtx = document.getElementById("ledgerYearChart");
-        ledgerYearChart = new Chart(yearCtx, {
-          type: "bar",
-          data: {
-            labels: yearly.map((r) => String(r["단계-연차"] ?? "")),
-            datasets: [{
-              label: "합계",
-              data: yearly.map((r) => parseNumericLike(r["합계"]) || 0),
-              backgroundColor: "#27ae6f"
-            }]
-          },
-          options: {
-            plugins: { legend: { display: false } },
-            scales: { y: { ticks: { callback: (v) => Number(v).toLocaleString("ko-KR") } } }
-          }
-        });
-      }
     }
 
     async function renderBudgetLedger() {
