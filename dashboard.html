@@ -1370,17 +1370,7 @@
         }
       });
 
-      const select = document.getElementById("ledgerProjectSelect");
-      select.innerHTML = sortedSummary
-        .map((r) => `<option value="${r["번호"]}">[${r["번호"]}] ${r["사업명"] ?? ""}</option>`)
-        .join("");
-      select.value = String(state.ledgerSelectedNum);
-      select.addEventListener("change", () => {
-        state.ledgerSelectedNum = Number(select.value);
-        renderLedgerProjectDetail(summary, detail);
-      });
-
-      renderLedgerProjectDetail(summary, detail);
+      renderLedgerBody(summary, detail);
     }
 
     function switchView(view) {
