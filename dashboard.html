@@ -1174,15 +1174,36 @@
       return state.ledger;
     }
 
+    // 총 수행기간("YYYY-MM-DD - YYYY-MM-DD")에 오늘이 포함되면 "수행중", 아니면 "종료"
+    function computeLedgerStatus(row) {
+      const period = String(row["총 수행기간"] ?? "").trim();
+      const m = period.match(/(\d{4}-\d{2}-\d{2})\D+(\d{4}-\d{2}-\d{2})/);
+      if (!m) return "";
+      const start = parseToDate(m[1]);
+      const end = parseToDate(m[2]);
+      if (!start || !end) return "";
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+      const e = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+      return today >= s && today <= e ? "수행중" : "종료";
+    }
+
     const LEDGER_TABLE_COLUMNS = [
       { key: "번호", label: "번호", cls: "ledger-col-num" },
       { key: "유형", label: "유형" },
+      { key: "상태", label: "상태", cls: "ledger-col-status", compute: (row) => computeLedgerStatus(row) },
       { key: "과제번호", label: "과제번호" },
       { key: "사업명", label: "사업명" },
       { key: "과제명", label: "과제명" },
       { key: "총 수행기간", label: "총 수행기간" },
       { key: "총 사업비", label: "총 사업비", money: true }
     ];
+
+    function ledgerCellText(row, col) {
+      const raw = col.compute ? col.compute(row) : row[col.key];
+      return col.money ? formatKrw(raw) : String(raw ?? "");
+    }
 
     // 총괄표의 과제번호가 projects/ 폴더의 엑셀 파일명(state.projects[].name)과 일치하면 해당 프로젝트로 이동
     function findMatchingLedgerProject(taskNumber) {
@@ -1206,32 +1227,20 @@
 
     function renderLedgerTableView(body, summary, detail) {
       const sorted = summary.slice().sort((a, b) => Number(a["번호"]) - Number(b["번호"]));
-      const thead = `<thead><tr>${LEDGER_TABLE_COLUMNS.map((c) => `<th class="${c.cls || ""}">${c.label}</th>`).join("")}</tr></thead>`;
-      const tbody = `<tbody>${sorted
-        .map((row) => {
-          const cells = LEDGER_TABLE_COLUMNS.map((c) => {
-            const raw = row[c.key];
-            const text = c.money ? formatKrw(raw) : String(raw ?? "");
-            if (c.key === "과제명") {
-              return `<td class="${c.cls || ""}"><a href="#" class="ledger-open-detail" data-num="${row["번호"]}" style="color:var(--accent);font-weight:700;text-decoration:none;">${text || "(과제명 미입력)"}</a></td>`;
-            }
-            if (c.key === "과제번호") {
-              const matchName = findMatchingLedgerProject(raw);
-              if (matchName) {
-                return `<td class="${c.cls || ""}"><a href="#" class="ledger-open-project" data-project="${matchName}" style="color:#137a2c;font-weight:700;text-decoration:none;" title="과제 시트로 이동">${text} 📄</a></td>`;
-              }
-              return `<td class="${c.cls || ""}">${text}</td>`;
-            }
-            return `<td class="${c.cls || ""}">${text}</td>`;
-          }).join("");
-          return `<tr class="ov-row" data-num="${row["번호"]}">${cells}</tr>`;
-        })
-        .join("")}</tbody>`;
+
+      const theadLabelRow = `<tr>${LEDGER_TABLE_COLUMNS.map((c) => `<th class="${c.cls || ""}">${c.label}</th>`).join("")}</tr>`;
+      const theadFilterRow = `<tr class="ledger-filter-row">${LEDGER_TABLE_COLUMNS.map((c) => `
+        <th class="${c.cls || ""}">
+          <input type="text" class="ledger-filter-input" data-key="${c.key}" placeholder="필터" value="${(state.ledgerFilters[c.key] || "").replace(/"/g, "&quot;")}" />
+        </th>`).join("")}</tr>`;
 
       body.innerHTML = `<h3 class="card-title">과제별 상세 (총괄표 + 연차별 예산 breakdown)</h3>
-        <p class="hint">과제명을 클릭하면 상세로 이동합니다. 과제번호(📄)가 있으면 클릭 시 과제 시트로 이동합니다.</p>
+        <p class="hint">과제명을 클릭하면 상세로 이동합니다. 과제번호(📄)가 있으면 클릭 시 과제 시트로 이동합니다. 각 열 상단 입력칸으로 필터링할 수 있습니다.</p>
         <div class="table-wrap" style="max-height:520px;">
-          <table class="sheet-table ledger-table">${thead}${tbody}</table>
+          <table class="sheet-table ledger-table">
+            <thead>${theadLabelRow}${theadFilterRow}</thead>
+            <tbody id="ledgerTableBody"></tbody>
+          </table>
         </div>`;
 
       const openDetail = (num) => {
@@ -1247,26 +1256,73 @@
         renderDashboard();
       };
 
-      body.querySelectorAll("tr.ov-row").forEach((tr) => {
-        tr.style.cursor = "pointer";
-        tr.addEventListener("click", (e) => {
-          if (e.target.closest("a.ledger-open-detail, a.ledger-open-project")) return; // 링크 클릭은 자체 핸들러가 처리
-          openDetail(Number(tr.dataset.num));
+      function renderTbody() {
+        const filtered = sorted.filter((row) => LEDGER_TABLE_COLUMNS.every((c) => {
+          const f = (state.ledgerFilters[c.key] || "").trim().toLowerCase();
+          if (!f) return true;
+          return ledgerCellText(row, c).toLowerCase().includes(f);
+        }));
+
+        const tbodyEl = document.getElementById("ledgerTableBody");
+        if (!tbodyEl) return;
+
+        if (!filtered.length) {
+          tbodyEl.innerHTML = `<tr><td colspan="${LEDGER_TABLE_COLUMNS.length}" style="text-align:center;color:var(--muted);padding:20px;">필터 조건에 맞는 과제가 없습니다.</td></tr>`;
+          return;
+        }
+
+        tbodyEl.innerHTML = filtered.map((row) => {
+          const cells = LEDGER_TABLE_COLUMNS.map((c) => {
+            const text = ledgerCellText(row, c);
+            if (c.key === "과제명") {
+              return `<td class="${c.cls || ""}"><a href="#" class="ledger-open-detail" data-num="${row["번호"]}" style="color:var(--accent);font-weight:700;text-decoration:none;">${text || "(과제명 미입력)"}</a></td>`;
+            }
+            if (c.key === "과제번호") {
+              const matchName = findMatchingLedgerProject(row[c.key]);
+              if (matchName) {
+                return `<td class="${c.cls || ""}"><a href="#" class="ledger-open-project" data-project="${matchName}" style="color:#137a2c;font-weight:700;text-decoration:none;" title="과제 시트로 이동">${text} 📄</a></td>`;
+              }
+              return `<td class="${c.cls || ""}">${text}</td>`;
+            }
+            if (c.key === "상태") {
+              const statusCls = text === "수행중" ? "ledger-status-ok" : "ledger-status-done";
+              return `<td class="${c.cls || ""} ${statusCls}">${text}</td>`;
+            }
+            return `<td class="${c.cls || ""}">${text}</td>`;
+          }).join("");
+          return `<tr class="ov-row" data-num="${row["번호"]}">${cells}</tr>`;
+        }).join("");
+
+        tbodyEl.querySelectorAll("tr.ov-row").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", (e) => {
+            if (e.target.closest("a.ledger-open-detail, a.ledger-open-project")) return; // 링크 클릭은 자체 핸들러가 처리
+            openDetail(Number(tr.dataset.num));
+          });
+        });
+        tbodyEl.querySelectorAll("a.ledger-open-detail").forEach((a) => {
+          a.addEventListener("click", (e) => {
+            e.preventDefault();
+            openDetail(Number(a.dataset.num));
+          });
+        });
+        tbodyEl.querySelectorAll("a.ledger-open-project").forEach((a) => {
+          a.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openProjectSheet(a.dataset.project);
+          });
+        });
+      }
+
+      body.querySelectorAll(".ledger-filter-input").forEach((input) => {
+        input.addEventListener("input", () => {
+          state.ledgerFilters[input.dataset.key] = input.value;
+          renderTbody();
         });
       });
-      body.querySelectorAll("a.ledger-open-detail").forEach((a) => {
-        a.addEventListener("click", (e) => {
-          e.preventDefault();
-          openDetail(Number(a.dataset.num));
-        });
-      });
-      body.querySelectorAll("a.ledger-open-project").forEach((a) => {
-        a.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          openProjectSheet(a.dataset.project);
-        });
-      });
+
+      renderTbody();
     }
 
     function renderLedgerDetailView(body, summary, detail) {
