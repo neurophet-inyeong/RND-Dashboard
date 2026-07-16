@@ -1398,6 +1398,25 @@
 
       if (ledgerYearlyCostChart) { ledgerYearlyCostChart.destroy(); ledgerYearlyCostChart = null; }
       const yearlyCostCtx = document.getElementById("ledgerYearlyCostChart");
+      const stackTotalLabelPlugin = {
+        id: "stackTotalLabel",
+        afterDatasetsDraw(chart) {
+          const { ctx, data } = chart;
+          const lastMeta = chart.getDatasetMeta(data.datasets.length - 1);
+          ctx.save();
+          ctx.font = "bold 11px sans-serif";
+          ctx.fillStyle = "#33486f";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "bottom";
+          lastMeta.data.forEach((bar, index) => {
+            const total = data.datasets.reduce((sum, ds) => sum + (ds.data[index] || 0), 0);
+            if (total > 0) {
+              ctx.fillText(total.toLocaleString("ko-KR"), bar.x, bar.y - 4);
+            }
+          });
+          ctx.restore();
+        }
+      };
       ledgerYearlyCostChart = new Chart(yearlyCostCtx, {
         type: "bar",
         data: {
@@ -1408,7 +1427,9 @@
             backgroundColor: cat.color
           }))
         },
+        plugins: [stackTotalLabelPlugin],
         options: {
+          layout: { padding: { top: 22 } },
           plugins: { legend: { position: "bottom" } },
           scales: {
             x: { stacked: true },
