@@ -1401,18 +1401,21 @@
 
       if (ledgerYearlyCostChart) { ledgerYearlyCostChart.destroy(); ledgerYearlyCostChart = null; }
       const yearlyCostCtx = document.getElementById("ledgerYearlyCostChart");
+      const barCount = yearlyCost.categories.length;
       const stackTotalLabelPlugin = {
         id: "stackTotalLabel",
         afterDatasetsDraw(chart) {
           const { ctx, data } = chart;
-          const lastMeta = chart.getDatasetMeta(data.datasets.length - 1);
+          const lastBarMeta = chart.getDatasetMeta(barCount - 1);
           ctx.save();
           ctx.font = "bold 11px sans-serif";
           ctx.fillStyle = "#33486f";
           ctx.textAlign = "center";
           ctx.textBaseline = "bottom";
-          lastMeta.data.forEach((bar, index) => {
-            const total = data.datasets.reduce((sum, ds) => sum + (ds.data[index] || 0), 0);
+          lastBarMeta.data.forEach((bar, index) => {
+            const total = data.datasets
+              .slice(0, barCount)
+              .reduce((sum, ds) => sum + (ds.data[index] || 0), 0);
             if (total > 0) {
               ctx.fillText(total.toLocaleString("ko-KR"), bar.x, bar.y - 4);
             }
@@ -1421,14 +1424,28 @@
         }
       };
       ledgerYearlyCostChart = new Chart(yearlyCostCtx, {
-        type: "bar",
         data: {
           labels: yearlyCost.years.map(String),
-          datasets: yearlyCost.categories.map((cat, i) => ({
-            label: cat.label,
-            data: yearlyCost.years.map((y) => yearlyCost.map.get(y)[cat.key] || 0),
-            backgroundColor: cat.color
-          }))
+          datasets: [
+            ...yearlyCost.categories.map((cat) => ({
+              type: "bar",
+              label: cat.label,
+              data: yearlyCost.years.map((y) => yearlyCost.map.get(y)[cat.key] || 0),
+              backgroundColor: cat.color,
+              yAxisID: "y"
+            })),
+            {
+              type: "line",
+              label: "정부지원금 (현금)",
+              data: yearlyCost.years.map((y) => yearlyCost.map.get(y)[LEDGER_GOV_FUND_KEY] || 0),
+              borderColor: "#d9345c",
+              backgroundColor: "#d9345c",
+              yAxisID: "y1",
+              tension: 0.3,
+              pointRadius: 3,
+              order: 0
+            }
+          ]
         },
         plugins: [stackTotalLabelPlugin],
         options: {
@@ -1436,7 +1453,15 @@
           plugins: { legend: { position: "bottom" } },
           scales: {
             x: { stacked: true },
-            y: { stacked: true, ticks: { callback: (v) => Number(v).toLocaleString("ko-KR") } }
+            y: {
+              stacked: true,
+              ticks: { callback: (v) => Number(v).toLocaleString("ko-KR") }
+            },
+            y1: {
+              position: "right",
+              grid: { drawOnChartArea: false },
+              ticks: { callback: (v) => Number(v).toLocaleString("ko-KR") }
+            }
           }
         }
       });
