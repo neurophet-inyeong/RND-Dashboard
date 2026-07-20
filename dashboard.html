@@ -1140,6 +1140,43 @@
 
     const LEDGER_GOV_FUND_KEY = "정부지원금 (현금)";
 
+    const LEDGER_DETAIL_BUDGET_COLUMNS = [
+      { key: "정부지원금 (현금)", label: "정부지원금(현금)" },
+      { key: "지방비 (현금)", label: "지방비(현금)" },
+      { key: "민간부담금 (현금)", label: "민간부담금(현금)" },
+      { key: "민간부담금 (현물)", label: "민간부담금(현물)" }
+    ];
+
+    // 과제상세의 연차별 사업비 표: 정부지원금/지방비/민간부담금(현금·현물)만 표시 + 총사업비(4열 합) + 합계 행
+    function buildLedgerYearlyBudgetTableHtml(rows) {
+      if (!rows.length) return "데이터가 없습니다.";
+
+      const totals = Object.fromEntries(LEDGER_DETAIL_BUDGET_COLUMNS.map((c) => [c.key, 0]));
+      let grandTotal = 0;
+
+      const bodyRows = rows.map((row) => {
+        const label = String(row["단계-연차"] ?? row["연차수"] ?? "");
+        let rowSum = 0;
+        const cells = LEDGER_DETAIL_BUDGET_COLUMNS.map((c) => {
+          const val = parseNumericLike(row[c.key]) || 0;
+          totals[c.key] += val;
+          rowSum += val;
+          return `<td class="num-cell">${val ? val.toLocaleString("ko-KR") : ""}</td>`;
+        }).join("");
+        grandTotal += rowSum;
+        return `<tr><td class="txt-cell">${label}</td>${cells}<td class="num-cell">${rowSum.toLocaleString("ko-KR")}</td></tr>`;
+      }).join("");
+
+      const totalCells = LEDGER_DETAIL_BUDGET_COLUMNS
+        .map((c) => `<td class="num-cell">${totals[c.key].toLocaleString("ko-KR")}</td>`)
+        .join("");
+      const footerRow = `<tr class="ledger-total-row"><td class="txt-cell">합계</td>${totalCells}<td class="num-cell">${grandTotal.toLocaleString("ko-KR")}</td></tr>`;
+
+      const thead = `<thead><tr><th>단계-연차</th>${LEDGER_DETAIL_BUDGET_COLUMNS.map((c) => `<th>${c.label}</th>`).join("")}<th>총사업비</th></tr></thead>`;
+
+      return `<table class="sheet-table">${thead}<tbody>${bodyRows}${footerRow}</tbody></table>`;
+    }
+
     // 원본데이터의 시작일 연도 기준으로 비용 항목(인건비/연구활동비 등) + 정부지원금을 합산
     function groupYearlyCosts(detailRows) {
       const byYear = new Map();
