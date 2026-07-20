@@ -1416,7 +1416,7 @@
       const yearly = detail.filter((r) => Number(r["시트명"]) === num);
       const yearlyHtml = yearly.length
         ? `<h3 class="card-title" style="margin-top:14px;">연차별 사업비</h3>
-           <div class="table-wrap" style="margin-top:10px;">${buildSheetTableHtml(yearly, "사업비")}</div>`
+           <div class="table-wrap" style="margin-top:10px;">${buildLedgerYearlyBudgetTableHtml(yearly)}</div>`
         : `<p class="hint" style="margin-top:14px;">이 과제의 연차별 상세 데이터(원본데이터)가 없습니다.</p>`;
 
       body.innerHTML = `
