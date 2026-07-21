@@ -1627,10 +1627,17 @@
             <div id="ledgerBody"></div>
           </div>
           <div class="card" style="margin-bottom:16px;">
-            <h3 class="card-title">연도별 비용 항목 합계 (원본데이터)</h3>
-            <div style="height:660px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+              <h3 class="card-title" style="margin:0;">연도별 비용 항목 합계 (원본데이터)</h3>
+              <div class="subtabs" id="ledgerYearlyCostViewTabs" style="margin:0;">
+                <button type="button" class="subtab-btn active" data-view="chart">📊 차트</button>
+                <button type="button" class="subtab-btn" data-view="table">📋 표</button>
+              </div>
+            </div>
+            <div id="ledgerYearlyCostChartWrap" style="height:660px;">
               <canvas id="ledgerYearlyCostChart"></canvas>
             </div>
+            <div id="ledgerYearlyCostTableWrap" class="table-wrap hidden" style="max-height:660px;"></div>
           </div>
           <div class="card" style="margin-bottom:16px;">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
