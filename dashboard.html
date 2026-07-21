@@ -1140,6 +1140,50 @@
 
     const LEDGER_GOV_FUND_KEY = "정부지원금 (현금)";
 
+    // 연도별 비용 항목 합계 차트와 같은 데이터를 표로 표시 (인건비~간접비 + 정부지원금 + 합계, 마지막 합계 행 포함)
+    function buildLedgerYearlyCostTableHtml(yearlyCost) {
+      if (!yearlyCost.years.length) return "데이터가 없습니다.";
+
+      const theadCols = yearlyCost.categories.map((cat) => `<th>${cat.label}</th>`).join("");
+
+      const bodyRows = yearlyCost.years
+        .map((y) => {
+          const bucket = yearlyCost.map.get(y);
+          let rowSum = 0;
+          const cells = yearlyCost.categories
+            .map((cat) => {
+              const val = bucket[cat.key] || 0;
+              rowSum += val;
+              return `<td class="num-cell">${val ? val.toLocaleString("ko-KR") : ""}</td>`;
+            })
+            .join("");
+          const gov = bucket[LEDGER_GOV_FUND_KEY] || 0;
+          return `<tr><td class="txt-cell">${y}</td>${cells}<td class="num-cell">${gov ? gov.toLocaleString("ko-KR") : ""}</td><td class="num-cell">${rowSum.toLocaleString("ko-KR")}</td></tr>`;
+        })
+        .join("");
+
+      let grandTotal = 0;
+      let grandGov = 0;
+      const footerCells = yearlyCost.categories
+        .map((cat) => {
+          const total = yearlyCost.years.reduce((acc, y) => acc + (yearlyCost.map.get(y)[cat.key] || 0), 0);
+          grandTotal += total;
+          return `<td class="num-cell">${total ? total.toLocaleString("ko-KR") : ""}</td>`;
+        })
+        .join("");
+      grandGov = yearlyCost.years.reduce((acc, y) => acc + (yearlyCost.map.get(y)[LEDGER_GOV_FUND_KEY] || 0), 0);
+
+      return `
+        <table class="sheet-table">
+          <thead><tr><th>연도</th>${theadCols}<th>정부지원금(현금)</th><th>합계</th></tr></thead>
+          <tbody>
+            ${bodyRows}
+            <tr class="ledger-total-row"><td class="txt-cell">합계</td>${footerCells}<td class="num-cell">${grandGov ? grandGov.toLocaleString("ko-KR") : ""}</td><td class="num-cell">${grandTotal.toLocaleString("ko-KR")}</td></tr>
+          </tbody>
+        </table>
+      `;
+    }
+
     const LEDGER_YEARLY_DETAIL_COLUMNS = [
       { key: "정부지원금 (현금)", label: "정부지원금(현금)" },
       { key: "지방비 (현금)", label: "지방비(현금)" },
