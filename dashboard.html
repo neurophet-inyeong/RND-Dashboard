@@ -1174,12 +1174,13 @@
     }
 
     // 연도별 원본데이터 표: 표 위 체크박스로 선택한 항목/연도만 표에 표시하고 오른쪽 "합계" 열로 합산
-    function renderLedgerYearlyDetailTable(container, checklistEl, yearChecklistEl, detailRows) {
+    function renderLedgerYearlyDetailTable(container, checklistEl, yearChecklistEl, downloadBtnEl, detailRows) {
       const { years, map } = groupYearlyDetailByYear(detailRows);
       if (!years.length) {
         container.innerHTML = "데이터가 없습니다.";
         checklistEl.innerHTML = "";
         yearChecklistEl.innerHTML = "";
+        downloadBtnEl.disabled = true;
         return;
       }
 
