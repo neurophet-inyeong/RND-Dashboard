@@ -1568,32 +1568,57 @@
       const yearlyCost = groupYearlyCosts(detail);
 
       budgetLedgerGrid.innerHTML = `
-        <div class="card" style="margin-bottom:16px;">
-          <h2 class="card-title">전사 과제 예산 현황 (SharePoint 연동 · 총괄표/원본데이터)</h2>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:10px;">
-            <div class="ov-card"><div class="ov-card-badge">전체 과제 수</div><div class="ov-card-name">${summary.length.toLocaleString("ko-KR")}건</div></div>
-            <div class="ov-card"><div class="ov-card-badge">총 사업비 합계</div><div class="ov-card-name">${formatKrw(totalBudget)}</div></div>
-            <div class="ov-card"><div class="ov-card-badge">정부지원금 합계</div><div class="ov-card-name">${formatKrw(govFund)}</div></div>
-            <div class="ov-card"><div class="ov-card-badge">민간부담금 합계</div><div class="ov-card-name">${formatKrw(privateFund)}</div></div>
+        <div class="subtabs" id="ledgerSubtabs">
+          <button type="button" class="subtab-btn active" data-tab="overview">📋 과제 현황</button>
+          <button type="button" class="subtab-btn" data-tab="wonbon">🗂️ 원본데이터</button>
+        </div>
+        <div id="ledgerOverviewPane">
+          <div class="card" style="margin-bottom:16px;">
+            <h2 class="card-title">전사 과제 예산 현황 (SharePoint 연동 · 총괄표/원본데이터)</h2>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:10px;">
+              <div class="ov-card"><div class="ov-card-badge">전체 과제 수</div><div class="ov-card-name">${summary.length.toLocaleString("ko-KR")}건</div></div>
+              <div class="ov-card"><div class="ov-card-badge">총 사업비 합계</div><div class="ov-card-name">${formatKrw(totalBudget)}</div></div>
+              <div class="ov-card"><div class="ov-card-badge">정부지원금 합계</div><div class="ov-card-name">${formatKrw(govFund)}</div></div>
+              <div class="ov-card"><div class="ov-card-badge">민간부담금 합계</div><div class="ov-card-name">${formatKrw(privateFund)}</div></div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:16px;">
+            <div id="ledgerBody"></div>
+          </div>
+          <div class="card" style="margin-bottom:16px;">
+            <h3 class="card-title">연도별 비용 항목 합계 (원본데이터)</h3>
+            <div style="height:660px;">
+              <canvas id="ledgerYearlyCostChart"></canvas>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:16px;">
+            <h3 class="card-title">연도별 원본데이터 항목 (체크한 항목만 합계)</h3>
+            <p class="hint" style="margin-bottom:8px;">시작일 기준 연도로 집계됩니다. 아래에서 항목/연도를 체크하면 표에 표시되고 오른쪽 합계 열에 반영됩니다.</p>
+            <div id="ledgerYearlyDetailChecklist" style="margin-bottom:6px;"></div>
+            <div id="ledgerYearlyDetailYearChecklist" style="margin-bottom:10px;padding-top:8px;border-top:1px solid #e7ecf6;"></div>
+            <div class="table-wrap" id="ledgerYearlyDetailTableWrap" style="max-height:420px;"></div>
           </div>
         </div>
-        <div class="card" style="margin-bottom:16px;">
-          <div id="ledgerBody"></div>
-        </div>
-        <div class="card" style="margin-bottom:16px;">
-          <h3 class="card-title">연도별 비용 항목 합계 (원본데이터)</h3>
-          <div style="height:660px;">
-            <canvas id="ledgerYearlyCostChart"></canvas>
+        <div id="ledgerWonbonPane" class="hidden">
+          <div class="card" style="margin-bottom:16px;">
+            <h3 class="card-title">원본데이터 (과제 시트에서 재구성한 연차별 원본 데이터, 총 ${detail.length.toLocaleString("ko-KR")}행)</h3>
+            <p class="hint" style="margin-bottom:8px;">각 과제 시트의 연차별 요약표 + 세목별 상세표를 조합해 만든 원본데이터입니다.</p>
+            <div class="table-wrap" id="ledgerWonbonTableWrap" style="max-height:640px;"></div>
           </div>
-        </div>
-        <div class="card" style="margin-bottom:16px;">
-          <h3 class="card-title">연도별 원본데이터 항목 (체크한 항목만 합계)</h3>
-          <p class="hint" style="margin-bottom:8px;">시작일 기준 연도로 집계됩니다. 아래에서 항목/연도를 체크하면 표에 표시되고 오른쪽 합계 열에 반영됩니다.</p>
-          <div id="ledgerYearlyDetailChecklist" style="margin-bottom:6px;"></div>
-          <div id="ledgerYearlyDetailYearChecklist" style="margin-bottom:10px;padding-top:8px;border-top:1px solid #e7ecf6;"></div>
-          <div class="table-wrap" id="ledgerYearlyDetailTableWrap" style="max-height:420px;"></div>
         </div>
       `;
+
+      document.getElementById("ledgerWonbonTableWrap").innerHTML = buildSheetTableHtml(detail, "사업비");
+
+      document.querySelectorAll("#ledgerSubtabs .subtab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll("#ledgerSubtabs .subtab-btn").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          const tab = btn.dataset.tab;
+          document.getElementById("ledgerOverviewPane").classList.toggle("hidden", tab !== "overview");
+          document.getElementById("ledgerWonbonPane").classList.toggle("hidden", tab !== "wonbon");
+        });
+      });
 
       if (ledgerYearlyCostChart) { ledgerYearlyCostChart.destroy(); ledgerYearlyCostChart = null; }
       const yearlyCostCtx = document.getElementById("ledgerYearlyCostChart");
