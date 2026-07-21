@@ -1174,77 +1174,68 @@
       return { years, map: byYear };
     }
 
-    // 연도별 원본데이터 표: 컬럼 체크박스로 선택한 항목만 합산해 오른쪽 "합계" 열에 표시
-    function renderLedgerYearlyDetailTable(container, detailRows) {
+    // 연도별 원본데이터 표: 표 위 체크박스로 선택한 항목만 표에 표시하고 오른쪽 "합계" 열로 합산
+    function renderLedgerYearlyDetailTable(container, checklistEl, detailRows) {
       const { years, map } = groupYearlyDetailByYear(detailRows);
       if (!years.length) {
         container.innerHTML = "데이터가 없습니다.";
+        checklistEl.innerHTML = "";
         return;
       }
 
-      const theadCols = LEDGER_YEARLY_DETAIL_COLUMNS
+      checklistEl.innerHTML = LEDGER_YEARLY_DETAIL_COLUMNS
         .map((c) => `
-          <th>
-            <label style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;font-weight:600;white-space:normal;">
-              <input type="checkbox" class="ledger-detail-check" data-key="${c.key}" checked>
-              <span>${c.label}</span>
-            </label>
-          </th>`)
+          <label style="display:inline-flex;align-items:center;gap:5px;margin:4px 14px 4px 0;font-size:0.86rem;color:#33486f;cursor:pointer;">
+            <input type="checkbox" class="ledger-detail-check" checked>
+            ${c.label}
+          </label>`)
         .join("");
 
-      const bodyRows = years
-        .map((y) => {
-          const bucket = map.get(y);
-          const cells = LEDGER_YEARLY_DETAIL_COLUMNS
-            .map((c) => {
-              const val = bucket[c.key] || 0;
-              return `<td class="num-cell" data-key="${c.key}" data-val="${val}">${val ? val.toLocaleString("ko-KR") : ""}</td>`;
-            })
-            .join("");
-          return `<tr><td class="txt-cell">${y}</td>${cells}<td class="num-cell ledger-detail-sum">0</td></tr>`;
-        })
-        .join("");
+      const checkboxes = [...checklistEl.querySelectorAll(".ledger-detail-check")];
 
-      const footerCells = LEDGER_YEARLY_DETAIL_COLUMNS
-        .map((c) => {
-          const total = years.reduce((acc, y) => acc + (map.get(y)[c.key] || 0), 0);
-          return `<td class="num-cell" data-key="${c.key}" data-val="${total}">${total ? total.toLocaleString("ko-KR") : ""}</td>`;
-        })
-        .join("");
+      function renderTable() {
+        const checkedCols = LEDGER_YEARLY_DETAIL_COLUMNS.filter((_, i) => checkboxes[i].checked);
 
-      container.innerHTML = `
-        <table class="sheet-table">
-          <thead><tr><th>연도</th>${theadCols}<th>합계</th></tr></thead>
-          <tbody>
-            ${bodyRows}
-            <tr class="ledger-total-row"><td class="txt-cell">합계</td>${footerCells}<td class="num-cell ledger-detail-sum">0</td></tr>
-          </tbody>
-        </table>
-      `;
+        const theadCols = checkedCols.map((c) => `<th>${c.label}</th>`).join("");
 
-      function recompute() {
-        const checkedKeys = new Set(
-          [...container.querySelectorAll(".ledger-detail-check:checked")].map((el) => el.dataset.key)
-        );
+        const bodyRows = years
+          .map((y) => {
+            const bucket = map.get(y);
+            let rowSum = 0;
+            const cells = checkedCols
+              .map((c) => {
+                const val = bucket[c.key] || 0;
+                rowSum += val;
+                return `<td class="num-cell">${val ? val.toLocaleString("ko-KR") : ""}</td>`;
+              })
+              .join("");
+            return `<tr><td class="txt-cell">${y}</td>${cells}<td class="num-cell">${rowSum.toLocaleString("ko-KR")}</td></tr>`;
+          })
+          .join("");
 
-        container.querySelectorAll("tbody tr").forEach((tr) => {
-          const sumCell = tr.querySelector(".ledger-detail-sum");
-          if (!sumCell) return;
-          let sum = 0;
-          tr.querySelectorAll("td[data-key]").forEach((td) => {
-            if (checkedKeys.has(td.dataset.key)) {
-              sum += Number(td.dataset.val) || 0;
-            }
-          });
-          sumCell.textContent = sum.toLocaleString("ko-KR");
-        });
+        let grandTotal = 0;
+        const footerCells = checkedCols
+          .map((c) => {
+            const total = years.reduce((acc, y) => acc + (map.get(y)[c.key] || 0), 0);
+            grandTotal += total;
+            return `<td class="num-cell">${total ? total.toLocaleString("ko-KR") : ""}</td>`;
+          })
+          .join("");
+
+        container.innerHTML = `
+          <table class="sheet-table">
+            <thead><tr><th>연도</th>${theadCols}<th>합계</th></tr></thead>
+            <tbody>
+              ${bodyRows}
+              <tr class="ledger-total-row"><td class="txt-cell">합계</td>${footerCells}<td class="num-cell">${grandTotal.toLocaleString("ko-KR")}</td></tr>
+            </tbody>
+          </table>
+        `;
       }
 
-      container.querySelectorAll(".ledger-detail-check").forEach((chk) => {
-        chk.addEventListener("change", recompute);
-      });
+      checkboxes.forEach((chk) => chk.addEventListener("change", renderTable));
 
-      recompute();
+      renderTable();
     }
 
     const LEDGER_DETAIL_BUDGET_COLUMNS = [
