@@ -1784,6 +1784,17 @@
         }
       });
 
+      document.getElementById("ledgerYearlyCostTableWrap").innerHTML = buildLedgerYearlyCostTableHtml(yearlyCost);
+      document.querySelectorAll("#ledgerYearlyCostViewTabs .subtab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll("#ledgerYearlyCostViewTabs .subtab-btn").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          const view = btn.dataset.view;
+          document.getElementById("ledgerYearlyCostChartWrap").classList.toggle("hidden", view !== "chart");
+          document.getElementById("ledgerYearlyCostTableWrap").classList.toggle("hidden", view !== "table");
+        });
+      });
+
       renderLedgerYearlyDetailTable(
         document.getElementById("ledgerYearlyDetailTableWrap"),
         document.getElementById("ledgerYearlyDetailChecklist"),
