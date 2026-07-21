@@ -1247,6 +1247,46 @@
           : "선택된 연도가 없습니다.";
       }
 
+      function downloadExcel() {
+        const checkedCols = LEDGER_YEARLY_DETAIL_COLUMNS.filter((_, i) => checkboxes[i].checked);
+        const checkedYears = years.filter((_, i) => yearCheckboxes[i].checked);
+        if (!checkedYears.length || !checkedCols.length) return;
+
+        const aoa = [["연도", ...checkedCols.map((c) => c.label), "합계"]];
+
+        checkedYears.forEach((y) => {
+          const bucket = map.get(y);
+          let rowSum = 0;
+          const row = [y];
+          checkedCols.forEach((c) => {
+            const val = bucket[c.key] || 0;
+            rowSum += val;
+            row.push(val);
+          });
+          row.push(rowSum);
+          aoa.push(row);
+        });
+
+        let grandTotal = 0;
+        const totalRow = ["합계"];
+        checkedCols.forEach((c) => {
+          const total = checkedYears.reduce((acc, y) => acc + (map.get(y)[c.key] || 0), 0);
+          grandTotal += total;
+          totalRow.push(total);
+        });
+        totalRow.push(grandTotal);
+        aoa.push(totalRow);
+
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "연도별 원본데이터");
+        const dateStr = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `연도별_원본데이터_${dateStr}.xlsx`);
+      }
+
+      downloadBtnEl.disabled = false;
+      downloadBtnEl.onclick = downloadExcel;
+
       checkboxes.forEach((chk) => chk.addEventListener("change", renderTable));
       yearCheckboxes.forEach((chk) => chk.addEventListener("change", renderTable));
 
