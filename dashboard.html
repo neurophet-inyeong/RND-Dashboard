@@ -1183,10 +1183,11 @@
         return;
       }
 
+      const defaultCheckedCols = new Set(["정부지원금 (현금)", "지방비 (현금)", "민간부담금 (현금)", "민간부담금 (현물)"]);
       checklistEl.innerHTML = LEDGER_YEARLY_DETAIL_COLUMNS
         .map((c) => `
           <label style="display:inline-flex;align-items:center;gap:5px;margin:4px 14px 4px 0;font-size:0.86rem;color:#33486f;cursor:pointer;">
-            <input type="checkbox" class="ledger-detail-check" checked>
+            <input type="checkbox" class="ledger-detail-check"${defaultCheckedCols.has(c.key) ? " checked" : ""}>
             ${c.label}
           </label>`)
         .join("");
