@@ -63,6 +63,7 @@ def read_project_rows(ws, sheet_name: str) -> list[dict]:
     """
     wide_headers = _read_wide_headers(ws)
     year_col = wide_headers.get("단계-연차", WIDE_START_COL)
+    start_col = wide_headers.get("시작일")
 
     year_rows: list[tuple] = []
     r = 2
@@ -78,7 +79,11 @@ def read_project_rows(ws, sheet_name: str) -> list[dict]:
             break
         else:
             blank_streak = 0
-            year_rows.append((r, label))
+            # 단계-연차 라벨은 향후 연차를 위해 미리 채워져 있을 수 있음 →
+            # 실제로 시작일이 입력된(=확정된) 연차만 포함
+            has_start_date = start_col and ws.cell(row=r, column=start_col).value is not None
+            if has_start_date:
+                year_rows.append((r, label))
         r += 1
 
     long_header_row = _find_long_header_row(ws)
