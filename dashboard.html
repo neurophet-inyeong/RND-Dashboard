@@ -1173,12 +1173,13 @@
       return { years, map: byYear };
     }
 
-    // 연도별 원본데이터 표: 표 위 체크박스로 선택한 항목만 표에 표시하고 오른쪽 "합계" 열로 합산
-    function renderLedgerYearlyDetailTable(container, checklistEl, detailRows) {
+    // 연도별 원본데이터 표: 표 위 체크박스로 선택한 항목/연도만 표에 표시하고 오른쪽 "합계" 열로 합산
+    function renderLedgerYearlyDetailTable(container, checklistEl, yearChecklistEl, detailRows) {
       const { years, map } = groupYearlyDetailByYear(detailRows);
       if (!years.length) {
         container.innerHTML = "데이터가 없습니다.";
         checklistEl.innerHTML = "";
+        yearChecklistEl.innerHTML = "";
         return;
       }
 
@@ -1190,14 +1191,24 @@
           </label>`)
         .join("");
 
+      yearChecklistEl.innerHTML = years
+        .map((y) => `
+          <label style="display:inline-flex;align-items:center;gap:5px;margin:4px 14px 4px 0;font-size:0.86rem;color:#33486f;cursor:pointer;">
+            <input type="checkbox" class="ledger-detail-year-check" checked>
+            ${y}
+          </label>`)
+        .join("");
+
       const checkboxes = [...checklistEl.querySelectorAll(".ledger-detail-check")];
+      const yearCheckboxes = [...yearChecklistEl.querySelectorAll(".ledger-detail-year-check")];
 
       function renderTable() {
         const checkedCols = LEDGER_YEARLY_DETAIL_COLUMNS.filter((_, i) => checkboxes[i].checked);
+        const checkedYears = years.filter((_, i) => yearCheckboxes[i].checked);
 
         const theadCols = checkedCols.map((c) => `<th>${c.label}</th>`).join("");
 
-        const bodyRows = years
+        const bodyRows = checkedYears
           .map((y) => {
             const bucket = map.get(y);
             let rowSum = 0;
@@ -1215,13 +1226,14 @@
         let grandTotal = 0;
         const footerCells = checkedCols
           .map((c) => {
-            const total = years.reduce((acc, y) => acc + (map.get(y)[c.key] || 0), 0);
+            const total = checkedYears.reduce((acc, y) => acc + (map.get(y)[c.key] || 0), 0);
             grandTotal += total;
             return `<td class="num-cell">${total ? total.toLocaleString("ko-KR") : ""}</td>`;
           })
           .join("");
 
-        container.innerHTML = `
+        container.innerHTML = checkedYears.length
+          ? `
           <table class="sheet-table">
             <thead><tr><th>연도</th>${theadCols}<th>합계</th></tr></thead>
             <tbody>
@@ -1229,10 +1241,12 @@
               <tr class="ledger-total-row"><td class="txt-cell">합계</td>${footerCells}<td class="num-cell">${grandTotal.toLocaleString("ko-KR")}</td></tr>
             </tbody>
           </table>
-        `;
+          `
+          : "선택된 연도가 없습니다.";
       }
 
       checkboxes.forEach((chk) => chk.addEventListener("change", renderTable));
+      yearCheckboxes.forEach((chk) => chk.addEventListener("change", renderTable));
 
       renderTable();
     }
