@@ -1587,8 +1587,9 @@
         </div>
         <div class="card" style="margin-bottom:16px;">
           <h3 class="card-title">연도별 원본데이터 항목 (체크한 항목만 합계)</h3>
-          <p class="hint" style="margin-bottom:8px;">시작일 기준 연도로 집계됩니다. 아래에서 항목을 체크하면 표에 열이 표시되고 오른쪽 합계 열에 반영됩니다.</p>
-          <div id="ledgerYearlyDetailChecklist" style="margin-bottom:10px;"></div>
+          <p class="hint" style="margin-bottom:8px;">시작일 기준 연도로 집계됩니다. 아래에서 항목/연도를 체크하면 표에 표시되고 오른쪽 합계 열에 반영됩니다.</p>
+          <div id="ledgerYearlyDetailChecklist" style="margin-bottom:6px;"></div>
+          <div id="ledgerYearlyDetailYearChecklist" style="margin-bottom:10px;padding-top:8px;border-top:1px solid #e7ecf6;"></div>
           <div class="table-wrap" id="ledgerYearlyDetailTableWrap" style="max-height:420px;"></div>
         </div>
       `;
@@ -1665,6 +1666,7 @@
       renderLedgerYearlyDetailTable(
         document.getElementById("ledgerYearlyDetailTableWrap"),
         document.getElementById("ledgerYearlyDetailChecklist"),
+        document.getElementById("ledgerYearlyDetailYearChecklist"),
         detail
       );
 
