@@ -1581,6 +1581,11 @@
             <canvas id="ledgerYearlyCostChart"></canvas>
           </div>
         </div>
+        <div class="card" style="margin-bottom:16px;">
+          <h3 class="card-title">연도별 원본데이터 항목 (체크한 항목만 합계)</h3>
+          <p class="hint" style="margin-bottom:8px;">시작일 기준 연도로 집계됩니다. 항목을 체크/해제하면 오른쪽 합계 열이 바뀝니다.</p>
+          <div class="table-wrap" id="ledgerYearlyDetailTableWrap" style="max-height:420px;"></div>
+        </div>
       `;
 
       if (ledgerYearlyCostChart) { ledgerYearlyCostChart.destroy(); ledgerYearlyCostChart = null; }
@@ -1651,6 +1656,8 @@
           }
         }
       });
+
+      renderLedgerYearlyDetailTable(document.getElementById("ledgerYearlyDetailTableWrap"), detail);
 
       renderLedgerBody(summary, detail);
     }
