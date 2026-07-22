@@ -1487,6 +1487,11 @@
       const theadLabelRow = `<tr>${LEDGER_TABLE_COLUMNS.map((c) => `<th class="${c.cls || ""}">${c.label}</th>`).join("")}</tr>`;
       const theadFilterRow = `<tr class="ledger-filter-row">${LEDGER_TABLE_COLUMNS.map((c) => {
         const current = state.ledgerFilters[c.key] || "";
+        if (c.textFilter) {
+          return `<th class="${c.cls || ""}">
+            <input type="text" class="ledger-filter-input" data-key="${c.key}" placeholder="검색..." value="${current.replace(/"/g, "&quot;")}" />
+          </th>`;
+        }
         const optionsHtml = getLedgerColumnOptions(sorted, c)
           .map((v) => `<option value="${v.replace(/"/g, "&quot;")}"${v === current ? " selected" : ""}>${v}</option>`)
           .join("");
@@ -1524,6 +1529,7 @@
         const filtered = sorted.filter((row) => LEDGER_TABLE_COLUMNS.every((c) => {
           const f = state.ledgerFilters[c.key] || "";
           if (!f) return true;
+          if (c.textFilter) return ledgerCellText(row, c).toLowerCase().includes(f.toLowerCase());
           return ledgerCellText(row, c) === f;
         }));
 
