@@ -497,7 +497,8 @@
       padding: 4px 8px;
     }
 
-    .ledger-filter-select {
+    .ledger-filter-select,
+    .ledger-filter-input {
       width: 100%;
       max-width: 100%;
       box-sizing: border-box;
@@ -1504,7 +1505,7 @@
       }).join("")}</tr>`;
 
       body.innerHTML = `<h3 class="card-title">과제별 상세 (총괄표 + 연차별 예산 breakdown)</h3>
-        <p class="hint">과제명을 클릭하면 상세로 이동합니다. 과제번호(📄)가 있으면 클릭 시 과제 시트로 이동합니다. 각 열 상단 드롭다운으로 필터링할 수 있습니다.</p>
+        <p class="hint">과제명을 클릭하면 상세로 이동합니다. 과제번호(📄)가 있으면 클릭 시 과제 시트로 이동합니다. 각 열 상단에서 필터링할 수 있으며(과제명은 텍스트 검색), 나머지는 드롭다운입니다.</p>
         <div class="table-wrap" style="max-height:520px;">
           <table class="sheet-table ledger-table">
             <thead>${theadLabelRow}${theadFilterRow}</thead>
