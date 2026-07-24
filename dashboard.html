@@ -1663,7 +1663,8 @@
 
       const totalBudget = sumBy(summary, "총 사업비");
       const govFund = sumBy(summary, "정부지원금 (현금)");
-      const privateFund = sumBy(summary, "총 민간부담금");
+      const privateFundCash = sumBy(summary, "민간부담금 (현금)");
+      const privateFundInKind = sumBy(summary, "민간부담금 (현물)");
       const yearlyCost = groupYearlyCosts(detail);
 
       budgetLedgerGrid.innerHTML = `
