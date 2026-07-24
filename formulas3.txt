@@ -1,0 +1,759 @@
+--- row 2, 번호=1 ---
+  정부지원금(현금) (Q2): =IF($K2="","",
+_xlfn.LET(
+  _xlpm.시트, $B2,
+  _xlpm.헤더, Q$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K2="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현금) (S2): =IF($K2="","",
+_xlfn.LET(
+  _xlpm.시트, $B2,
+  _xlpm.헤더, S$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K2="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현물) (T2): =IF($K2="","",
+_xlfn.LET(
+  _xlpm.시트, $B2,
+  _xlpm.헤더, T$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K2="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  총사업비 (X2): =IF($K2="","",
+_xlfn.LET(
+  _xlpm.시트, $B2,
+  _xlpm.헤더, X$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K2="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+--- row 3, 번호=2 ---
+  정부지원금(현금) (Q3): =IF($K3="","",
+_xlfn.LET(
+  _xlpm.시트, $B3,
+  _xlpm.헤더, Q$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K3="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현금) (S3): =IF($K3="","",
+_xlfn.LET(
+  _xlpm.시트, $B3,
+  _xlpm.헤더, S$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K3="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현물) (T3): =IF($K3="","",
+_xlfn.LET(
+  _xlpm.시트, $B3,
+  _xlpm.헤더, T$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K3="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  총사업비 (X3): =IF($K3="","",
+_xlfn.LET(
+  _xlpm.시트, $B3,
+  _xlpm.헤더, X$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K3="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+--- row 4, 번호=3 ---
+  정부지원금(현금) (Q4): =IF($K4="","",
+_xlfn.LET(
+  _xlpm.시트, $B4,
+  _xlpm.헤더, Q$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K4="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현금) (S4): =IF($K4="","",
+_xlfn.LET(
+  _xlpm.시트, $B4,
+  _xlpm.헤더, S$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K4="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현물) (T4): =IF($K4="","",
+_xlfn.LET(
+  _xlpm.시트, $B4,
+  _xlpm.헤더, T$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K4="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  총사업비 (X4): =IF($K4="","",
+_xlfn.LET(
+  _xlpm.시트, $B4,
+  _xlpm.헤더, X$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K4="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+--- row 5, 번호=4 ---
+  정부지원금(현금) (Q5): =IF($K5="","",
+_xlfn.LET(
+  _xlpm.시트, $B5,
+  _xlpm.헤더, Q$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K5="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현금) (S5): =IF($K5="","",
+_xlfn.LET(
+  _xlpm.시트, $B5,
+  _xlpm.헤더, S$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K5="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현물) (T5): =IF($K5="","",
+_xlfn.LET(
+  _xlpm.시트, $B5,
+  _xlpm.헤더, T$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K5="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  총사업비 (X5): =IF($K5="","",
+_xlfn.LET(
+  _xlpm.시트, $B5,
+  _xlpm.헤더, X$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K5="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+--- row 6, 번호=5 ---
+  정부지원금(현금) (Q6): =IF($K6="","",
+_xlfn.LET(
+  _xlpm.시트, $B6,
+  _xlpm.헤더, Q$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K6="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현금) (S6): =IF($K6="","",
+_xlfn.LET(
+  _xlpm.시트, $B6,
+  _xlpm.헤더, S$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K6="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현물) (T6): =IF($K6="","",
+_xlfn.LET(
+  _xlpm.시트, $B6,
+  _xlpm.헤더, T$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K6="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  총사업비 (X6): =IF($K6="","",
+_xlfn.LET(
+  _xlpm.시트, $B6,
+  _xlpm.헤더, X$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K6="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+--- row 7, 번호=6 ---
+  정부지원금(현금) (Q7): =IF($K7="","",
+_xlfn.LET(
+  _xlpm.시트, $B7,
+  _xlpm.헤더, Q$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K7="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현금) (S7): =IF($K7="","",
+_xlfn.LET(
+  _xlpm.시트, $B7,
+  _xlpm.헤더, S$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K7="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현물) (T7): =IF($K7="","",
+_xlfn.LET(
+  _xlpm.시트, $B7,
+  _xlpm.헤더, T$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K7="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  총사업비 (X7): =IF($K7="","",
+_xlfn.LET(
+  _xlpm.시트, $B7,
+  _xlpm.헤더, X$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K7="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+--- row 8, 번호=7 ---
+  정부지원금(현금) (Q8): =IF($K8="","",
+_xlfn.LET(
+  _xlpm.시트, $B8,
+  _xlpm.헤더, Q$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K8="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현금) (S8): =IF($K8="","",
+_xlfn.LET(
+  _xlpm.시트, $B8,
+  _xlpm.헤더, S$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K8="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현물) (T8): =IF($K8="","",
+_xlfn.LET(
+  _xlpm.시트, $B8,
+  _xlpm.헤더, T$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K8="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  총사업비 (X8): =IF($K8="","",
+_xlfn.LET(
+  _xlpm.시트, $B8,
+  _xlpm.헤더, X$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K8="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+--- row 9, 번호=8 ---
+  정부지원금(현금) (Q9): =IF($K9="","",
+_xlfn.LET(
+  _xlpm.시트, $B9,
+  _xlpm.헤더, Q$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K9="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현금) (S9): =IF($K9="","",
+_xlfn.LET(
+  _xlpm.시트, $B9,
+  _xlpm.헤더, S$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K9="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현물) (T9): =IF($K9="","",
+_xlfn.LET(
+  _xlpm.시트, $B9,
+  _xlpm.헤더, T$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K9="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  총사업비 (X9): =IF($K9="","",
+_xlfn.LET(
+  _xlpm.시트, $B9,
+  _xlpm.헤더, X$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K9="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+--- row 10, 번호=9 ---
+  정부지원금(현금) (Q10): =IF($K10="","",
+_xlfn.LET(
+  _xlpm.시트, $B10,
+  _xlpm.헤더, Q$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K10="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현금) (S10): =IF($K10="","",
+_xlfn.LET(
+  _xlpm.시트, $B10,
+  _xlpm.헤더, S$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K10="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현물) (T10): =IF($K10="","",
+_xlfn.LET(
+  _xlpm.시트, $B10,
+  _xlpm.헤더, T$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K10="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  총사업비 (X10): =IF($K10="","",
+_xlfn.LET(
+  _xlpm.시트, $B10,
+  _xlpm.헤더, X$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K10="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+--- row 11, 번호=10 ---
+  정부지원금(현금) (Q11): =IF($K11="","",
+_xlfn.LET(
+  _xlpm.시트, $B11,
+  _xlpm.헤더, Q$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K11="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현금) (S11): =IF($K11="","",
+_xlfn.LET(
+  _xlpm.시트, $B11,
+  _xlpm.헤더, S$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K11="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현물) (T11): =IF($K11="","",
+_xlfn.LET(
+  _xlpm.시트, $B11,
+  _xlpm.헤더, T$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K11="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  총사업비 (X11): =IF($K11="","",
+_xlfn.LET(
+  _xlpm.시트, $B11,
+  _xlpm.헤더, X$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K11="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+--- row 12, 번호=21 ---
+  정부지원금(현금) (Q12): =IF($K12="","",
+_xlfn.LET(
+  _xlpm.시트, $B12,
+  _xlpm.헤더, Q$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K12="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현금) (S12): =IF($K12="","",
+_xlfn.LET(
+  _xlpm.시트, $B12,
+  _xlpm.헤더, S$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K12="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  민간부담금(현물) (T12): =IF($K12="","",
+_xlfn.LET(
+  _xlpm.시트, $B12,
+  _xlpm.헤더, T$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K12="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
+  총사업비 (X12): =IF($K12="","",
+_xlfn.LET(
+  _xlpm.시트, $B12,
+  _xlpm.헤더, X$1,
+  _xlpm.시작들, INDIRECT("'"&_xlpm.시트&"'!L2:L20"),
+  _xlpm.종료들, INDIRECT("'"&_xlpm.시트&"'!M2:M20"),
+  _xlpm.헤더범위, INDIRECT("'"&_xlpm.시트&"'!A1:Z1"),
+  _xlpm.대상열번호, _xlfn.XMATCH(_xlpm.헤더, _xlpm.헤더범위, 0),
+  _xlpm.대상열범위, INDEX(INDIRECT("'"&_xlpm.시트&"'!A2:Z20"), , _xlpm.대상열번호),
+  _xlpm.총합행, _xlfn.XMATCH("총합", INDIRECT("'"&_xlpm.시트&"'!K2:K20"), 0),
+  _xlpm.일치행, _xlfn.XMATCH(1, (_xlpm.시작들<=TODAY())*(_xlpm.종료들>=TODAY()), 0),
+  IF(
+    $K12="종료",
+    IF(ISNUMBER(_xlpm.총합행), INDEX(_xlpm.대상열범위, _xlpm.총합행), ""),
+    IF(ISNUMBER(_xlpm.일치행), INDEX(_xlpm.대상열범위, _xlpm.일치행), "")
+  )
+))
