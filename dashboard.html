@@ -1661,10 +1661,13 @@
         return;
       }
 
-      const totalBudget = sumBy(summary, "총 사업비");
-      const govFund = sumBy(summary, "정부지원금 (현금)");
-      const privateFundCash = sumBy(summary, "민간부담금 (현금)");
-      const privateFundInKind = sumBy(summary, "민간부담금 (현물)");
+      // 총괄표의 정부지원금/민간부담금/총사업비는 "종료" 과제는 총합, "진행중" 과제는 당해연도 값만 담고 있어
+      // 연차 전체를 합산하는 원본데이터 기준 집계와 어긋난다. 아래 "연도별 원본데이터 항목" 합계와 값을 맞추기 위해
+      // 상단 카드도 원본데이터(전 연차 합산) 기준으로 계산한다.
+      const totalBudget = sumBy(detail, "합계");
+      const govFund = sumBy(detail, "정부지원금 (현금)");
+      const privateFundCash = sumBy(detail, "민간부담금 (현금)");
+      const privateFundInKind = sumBy(detail, "민간부담금 (현물)");
       const yearlyCost = groupYearlyCosts(detail);
 
       budgetLedgerGrid.innerHTML = `
