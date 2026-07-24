@@ -1,0 +1,6 @@
+filtered rows: 48
+unique 번호: 48
+duplicate 번호 rows: 0
+Empty DataFrame
+Columns: [번호, 사업명, 단계-연차, 시작일, 종료일, 정부지원금 (현금), 민간부담금 (현금), 민간부담금 (현물), 총 사업비]
+Index: []
