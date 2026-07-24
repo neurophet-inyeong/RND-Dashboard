@@ -19,5 +19,5 @@ Next
 
 If Not bRunning Then
     oShell.CurrentDirectory = PROJECT_DIR
-    oShell.Run "py -m http.server 8080", 0, False
+    oShell.Run "py -m http.server 5500", 0, False
 End If

@@ -37,10 +37,10 @@ py -m streamlit run app.py
 ### 방법 2) 샘플 자동 불러오기까지 사용
 
 ```bash
-py -m http.server 8080
+py -m http.server 5500
 ```
 
-브라우저에서 `http://localhost:8080/dashboard.html` 접속
+브라우저에서 `http://localhost:5500/dashboard.html` 접속
 
 ## 파일 변경 시 자동 새로고침 + Git 자동 커밋/푸시
 
@@ -57,7 +57,7 @@ git branch -M main
 ### 2) 대시보드 서버 실행
 
 ```bash
-py -m http.server 8080
+py -m http.server 5500
 ```
 
 ### 3) 감시 스크립트 실행 (별도 터미널)

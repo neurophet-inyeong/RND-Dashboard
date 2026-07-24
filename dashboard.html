@@ -746,9 +746,9 @@
   <script>
     // file:// 로 열렸을 때 서버가 살아있으면 즉시 리다이렉트
     if (location.protocol === 'file:') {
-      fetch('http://localhost:8080/', { method: 'HEAD', mode: 'no-cors', cache: 'no-store',
+      fetch('http://localhost:5500/', { method: 'HEAD', mode: 'no-cors', cache: 'no-store',
         signal: AbortSignal.timeout(800) })
-        .then(() => location.replace('http://localhost:8080/dashboard.html'))
+        .then(() => location.replace('http://localhost:5500/dashboard.html'))
         .catch(() => {}); // 서버 없으면 File System API로 계속 진행
     }
 
