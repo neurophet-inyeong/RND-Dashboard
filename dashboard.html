@@ -692,11 +692,6 @@
 
       <button id="budgetLedgerBtn" class="menu-btn active">💰 총괄표 (예산 현황)</button>
 
-      <div>
-        <div class="s-title">Project Data</div>
-        <div id="projectMenu" class="menu-list"></div>
-      </div>
-
       <div class="divider">
         <button id="reloadProjectBtn" class="menu-btn secondary">프로젝트 폴더 다시 읽기</button>
         <button id="uploadBtn" class="menu-btn secondary">엑셀 직접 업로드</button>
@@ -852,7 +847,6 @@
       }
     }
 
-    const projectMenu = document.getElementById("projectMenu");
     const reloadProjectBtn = document.getElementById("reloadProjectBtn");
     const uploadBtn = document.getElementById("uploadBtn");
     const refreshBtn = document.getElementById("refreshBtn");
@@ -1522,7 +1516,6 @@
       const openProjectSheet = (projectName) => {
         state.activeProject = projectName;
         switchView("project");
-        renderProjectMenu();
         renderDashboard();
       };
 
@@ -1838,30 +1831,11 @@
         pageTitle.textContent = "총괄표 (예산 현황)";
         budgetLedgerBtn.classList.add("active");
         mainEl.style.padding = "";
-        renderProjectMenu();
         renderBudgetLedger();
       } else {
         projectSection.classList.remove("hidden");
         pageTitle.textContent = "과제 현황";
         mainEl.style.padding = "";
-        renderProjectMenu();
-      }
-    }
-
-    function renderProjectMenu() {
-      projectMenu.innerHTML = "";
-      for (const project of state.projects) {
-        const btn = document.createElement("button");
-        const isActive = state.view === "project" && project.name === state.activeProject;
-        btn.className = `menu-btn${isActive ? " active" : ""}`;
-        btn.textContent = `📊 ${project.name}`;
-        btn.addEventListener("click", () => {
-          state.activeProject = project.name;
-          switchView("project");
-          renderProjectMenu();
-          renderDashboard();
-        });
-        projectMenu.appendChild(btn);
       }
     }
 
