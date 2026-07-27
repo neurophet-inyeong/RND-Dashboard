@@ -11,7 +11,7 @@ Set oProcesses = oWMI.ExecQuery( _
 
 Dim bRunning : bRunning = False
 For Each oProcess In oProcesses
-    If InStr(LCase(oProcess.CommandLine), "http.server") > 0 Then
+    If InStr(LCase(oProcess.CommandLine), "http.server 5500") > 0 Then
         bRunning = True
         Exit For
     End If
